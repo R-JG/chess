@@ -5,7 +5,9 @@
 ::
 ::  import libraries and expose namespace
 /-  *historic
-/+  *chess, dbug, default-agent, pals
+/+  *chess, dbug, default-agent, pals, mast
+/=  index  /app/chess/index
+/=  style  /app/chess/style
 ::
 ::  define state structures
 |%
@@ -13,56 +15,114 @@
   $%  state-0
       state-1
   ==
-+$  active-game-state
-  $:  game=chess-game
-      position=chess-position
-      fen-repetition=(map @t @ud)
-      special-draw-available=?
-      auto-claim-special-draws=?
-      sent-draw-offer=?
-      got-draw-offer=?
-      sent-undo-request=?
-      got-undo-request=?
-      opponent=ship
-      practice-game=?
-  ==
 +$  state-1
   $:  %1
-      games=(map game-id active-game-state)
+      =games
       potential-states=(map game-id (list (pair active-game-state card)))
       archive=((mop game-id chess-game) gth)
-      challenges-sent=(map ship chess-challenge)
-      challenges-received=(map ship chess-challenge)
+      =challenges-sent
+      =challenges-received
       rng-state=(map ship chess-commitment)
+  ==
++$  front-end
+  $:  view=manx  url=path
+      selected-piece=?(chess-piece ~)  available-moves=(set chess-square)
+      available-threatens=(set chess-square)
   ==
 +$  card  card:agent:gall
 ++  arch-orm  ((on game-id chess-game) gth)
 --
 
 %-  agent:dbug
-=|  state-1
+=|  [state-1 front-end]
 =*  state  -
 ^-  agent:gall
 =<
 |_  =bowl:gall
 +*  this     .
     default  ~(. (default-agent this %|) bowl)
+    ::
+    ::  mast virtual arms:
+    routes  
+      %-  limo
+      :~  [/chess index]
+      ==
+    sail-sample
+      :*  games  challenges-sent  challenges-received
+          selected-piece  available-moves  available-threatens
+      ==
 ++  on-init
   on-init:default
 ++  on-save
-  !>(state)
+  !>(-.state)
 ++  on-load
   |=  old-state-vase=vase
   ^-  (quip card _this)
   =/  old-state  !<(versioned-state old-state-vase)
   ?-  -.old-state
-    %1  [~ this(state old-state)]
-    %0  [~ this(state *state-1)]
+    %1  :-  [[%pass /bind %arvo %e %connect `/chess %chess] ~]
+        this(state [old-state *front-end])
+    %0  :-  [[%pass /bind %arvo %e %connect `/chess %chess] ~]
+        this(state [*state-1 *front-end])
   ==
 ++  on-poke
   |=  [=mark =vase]
-  ^-  (quip card _this)
+  |^  ^-  (quip card _this)
   ?+  mark  (on-poke:default mark vase)
+    ::
+    ::  front-end initial page serving with mast
+    %handle-http-request
+      =+  !<([eyre-id=@ta req=inbound-request:eyre] vase)
+      ?.  authenticated.req
+        [(make-auth-redirect:mast eyre-id) this]
+      ?+    method.request.req  [(make-400:mast eyre-id) this]
+        %'GET'
+          =/  req-url=path  (parse-url:mast url.request.req)
+          ?:  =(/chess/style req-url)
+            [(make-css-response:mast eyre-id style) this]
+          =/  new-view=manx  (rig:mast routes req-url sail-sample)
+          :-  (plank:mast "chess" /display-updates our.bowl eyre-id new-view)
+          this(view new-view, url req-url)
+      ==
+    ::
+    ::  front-end event handling with mast
+    %json
+      ?>  =(our.bowl src.bowl)
+      =/  client-poke  (parse-json:mast !<(json vase))
+      ?+  tags.client-poke  (on-poke:default [mark vase])
+        ::
+        [%click %test-challenge ~]
+          =/  axn  [%send-challenge our.bowl %random '' &]
+          (send-challenge axn)
+          ::  there only needs to be a display update here for e.g. clearing inputs, a popup message, etc.
+          ::
+          ::  =^  cards  this  (send-challenge axn)
+          ::  =/  new-view=manx  (rig:mast routes url sail-sample)
+          ::  :_  this(view new-view)
+          ::  [(gust:mast /display-updates view new-view) cards]
+        ::
+        [%click %test-decline ~]
+          =^  cards  this  (decline-challenge [%decline-challenge ~zod])
+          =/  new-view=manx  (rig:mast routes url sail-sample)
+          :_  this(view new-view)
+          [(gust:mast /display-updates view new-view) cards]
+        ::
+        [%click %test-accept ~]
+          (accept-challenge [%accept-challenge ~zod])
+          ::  =^  cards  this  (accept-challenge [%accept-challenge ~zod])
+          ::  =/  new-view=manx  (rig:mast routes url sail-sample)
+          ::  :_  this(view new-view)
+          ::  [(gust:mast /display-updates view new-view) cards]
+        ::
+        [%click %test-resign ~]
+          =/  id-input=@t  (~(got by data.client-poke) '/target/id')
+          =/  id-val=game-id  (slav %dau id-input)
+          =^  cards  this  (resign [%resign id-val])
+          =/  new-view=manx  (rig:mast routes url sail-sample)
+          :_  this(view new-view)
+          [(gust:mast /display-updates view new-view) cards]
+        ::
+      ==
     ::
     ::  pokes managing active game state and challenges, possibly sent by the user
     %chess-user-action
@@ -72,117 +132,13 @@
       ?-  -.action
         ::  manage new outgoing challenges
         %send-challenge
-          ::  only allow one active challenge per ship
-          ?:  (~(has by challenges-sent) who.action)
-            %+  poke-nack  this
-            "already challenged {<who.action>}"
-          :_
-            ::  add to list of outgoing challenges
-            %=  this
-              challenges-sent  (~(put by challenges-sent) +.action)
-            ==
-          ::  send new challenge
-          :~  :*  %pass
-                  /poke/challenge/send
-                  %agent
-                  [who.action %chess]
-                  %poke
-                  %chess-agent-action
-                  !>([%challenge-received challenge.action])
-          ==  ==
+          (send-challenge action)
         %decline-challenge
-          ::  check if challenge exists
-          ?.  (~(has by challenges-received) who.action)
-            %+  poke-nack  this
-            "no challenge to decline from {<who.action>}"
-          :_
-            %=  this
-              ::  remove our challenger from challenges-received
-              challenges-received  (~(del by challenges-received) who.action)
-            ==
-          ::  tell our challenger we decline
-          ::  we don't care about ack/nack
-          :~  :*  %pass
-                  /poke/challenge/decline
-                  %agent
-                  [who.action %chess]
-                  %poke
-                  %chess-agent-action
-                  !>([%challenge-declined ~])
-              ==
-              ::  update observers that we replied to the challenge
-              :*  %give
-                  %fact
-                  ~[/challenges]
-                  %chess-update
-                  !>([%challenge-replied who.action])
-          ==  ==
+          (decline-challenge action)
         %accept-challenge
-          =/  challenge  (~(get by challenges-received) who.action)
-          ::  check if challenge exists
-          ?~  challenge
-            %+  poke-nack  this
-            "no challenge to accept from {<who.action>}"
-          ::  step 1 of assigning random sides
-          ?:  ?=(%random challenger-side.u.challenge)
-            =/  our-num  (shaf now.bowl eny.bowl)
-            =/  our-hash  (shaf %chess-rng our-num)
-            :_
-              %=  this
-                rng-state  (~(put by rng-state) who.action [our-num our-hash ~ ~ |])
-              ==
-            :~  :*  %pass
-                    /poke/rng/commit
-                    %agent
-                    [who.action %chess]
-                    %poke
-                    %chess-rng
-                    !>([%commit our-hash])
-            ==  ==
-          =/  our-side
-            ?:  ?=(%white challenger-side.u.challenge)
-              %black
-            %white
-          ::  create a unique game id
-          =/  game-id
-            (mix now.bowl (end [3 6] eny.bowl))
-          :_  this
-          ::  attempt to accept game
-          ::  handle our end on ack
-          :~  :*  %pass
-                  /poke/game/(scot %da game-id)/init
-                  %agent
-                  [who.action %chess]
-                  %poke
-                  %chess-agent-action
-                  !>([%challenge-accepted game-id our-side])
-          ==  ==
+          (accept-challenge action)
         %resign
-          =/  game-state
-            ^-  (unit active-game-state)
-            (~(get by games) game-id.action)
-          ?~  game-state
-            %+  poke-nack  this
-            "no active game with id {<game-id.action>}"
-          =/  result
-            ?:  =(our.bowl white.game.u.game-state)
-              %'0-1'
-            %'1-0'
-          ::  resign
-          ::  handle our end on ack
-          :_
-            %=  this
-              ::  reset potential states on resignation
-              potential-states  (~(put by potential-states) game-id.action ~)
-            ==
-          :~  :*  %pass
-                  /poke/game/(scot %da game-id.action)/ended/[result]
-                  %agent
-                  [opponent.u.game-state %chess]
-                  %poke
-                  %chess-agent-action
-                  !>([%end-game game-id.action result ~])
-          ==  ==
+          (resign action)
         %offer-draw
           =/  game-state
             ^-  (unit active-game-state)
@@ -1062,10 +1018,154 @@
         ==  ==
       ==
   ==
+  ::
+  ::  arms for:
+  ::  %chess-user-action
+  ::
+  ++  send-challenge
+    |=  [%send-challenge who=ship challenge=chess-challenge]
+    ^-  (quip card _this)
+    ::  only allow one active challenge per ship
+    ?:  (~(has by challenges-sent) who)
+      %+  poke-nack  this
+      "already challenged {<who>}"
+    :_
+      ::  add to list of outgoing challenges
+      %=  this
+        challenges-sent  (~(put by challenges-sent) [who challenge])
+      ==
+    ::  send new challenge
+    :~  :*  %pass
+            /poke/challenge/send
+            %agent
+            [who %chess]
+            %poke
+            %chess-agent-action
+            !>([%challenge-received challenge])
+    ==  ==
+  ++  decline-challenge
+    |=  [%decline-challenge who=ship]
+    ^-  (quip card _this)
+    ::  check if challenge exists
+    ?.  (~(has by challenges-received) who)
+      %+  poke-nack  this
+      "no challenge to decline from {<who>}"
+    :_
+      %=  this
+        ::  remove our challenger from challenges-received
+        challenges-received  (~(del by challenges-received) who)
+      ==
+    ::  tell our challenger we decline
+    ::  we don't care about ack/nack
+    :~  :*  %pass
+            /poke/challenge/decline
+            %agent
+            [who %chess]
+            %poke
+            %chess-agent-action
+            !>([%challenge-declined ~])
+        ==
+        ::  update observers that we replied to the challenge
+        :*  %give
+            %fact
+            ~[/challenges]
+            %chess-update
+            !>([%challenge-replied who])
+    ==  ==
+  ++  accept-challenge
+    |=  [%accept-challenge who=ship]
+    ^-  (quip card _this)
+    =/  challenge  (~(get by challenges-received) who)
+    ::  check if challenge exists
+    ?~  challenge
+      %+  poke-nack  this
+      "no challenge to accept from {<who>}"
+    ::  step 1 of assigning random sides
+    ?:  ?=(%random challenger-side.u.challenge)
+      =/  our-num  (shaf now.bowl eny.bowl)
+      =/  our-hash  (shaf %chess-rng our-num)
+      :_
+        %=  this
+          rng-state  (~(put by rng-state) who [our-num our-hash ~ ~ |])
+        ==
+      :~  :*  %pass
+              /poke/rng/commit
+              %agent
+              [who %chess]
+              %poke
+              %chess-rng
+              !>([%commit our-hash])
+      ==  ==
+    =/  our-side
+      ?:  ?=(%white challenger-side.u.challenge)
+        %black
+      %white
+    ::  create a unique game id
+    =/  game-id
+      (mix now.bowl (end [3 6] eny.bowl))
+    :_  this
+    ::  attempt to accept game
+    ::  handle our end on ack
+    :~  :*  %pass
+            /poke/game/(scot %da game-id)/init
+            %agent
+            [who %chess]
+            %poke
+            %chess-agent-action
+            !>([%challenge-accepted game-id our-side])
+    ==  ==
+  ++  resign
+    |=  [%resign =game-id]
+    ^-  (quip card _this)
+    =/  game-state
+      ^-  (unit active-game-state)
+      (~(get by games) game-id)
+    ?~  game-state
+      %+  poke-nack  this
+      "no active game with id {<game-id>}"
+    =/  result
+      ?:  =(our.bowl white.game.u.game-state)
+        %'0-1'
+      %'1-0'
+    ::  resign
+    ::  handle our end on ack
+    :_
+      %=  this
+        ::  reset potential states on resignation
+        potential-states  (~(put by potential-states) game-id ~)
+      ==
+    :~  :*  %pass
+            /poke/game/(scot %da game-id)/ended/[result]
+            %agent
+            [opponent.u.game-state %chess]
+            %poke
+            %chess-agent-action
+            !>([%end-game game-id result ~])
+    ==  ==
+  ::  ++  offer-draw
+  ::  ++  revoke-draw
+  ::  ++  decline-draw
+  ::  ++  accept-draw
+  ::  ++  claim-special
+  ::  ++  request-undo
+  ::  ++  revoke-undo
+  ::  ++  decline-undo
+  ::  ++  accept-undo
+  ::  ++  make-move
+  ::  ++  change-special-draw-preference
+  --
 ++  on-watch
   |=  =path
   ^-  (quip card _this)
   ?+  path  (on-watch:default path)
+    ::
+    ::  front-end
+    [%http-response *]
+      ?>  =(our.bowl src.bowl)
+      [~ this]
+    [%display-updates *]
+      ?>  =(our.bowl src.bowl)
+      [~ this]
     ::
     ::  get all challenge updates
     [%challenges ~]

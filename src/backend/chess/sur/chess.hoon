@@ -346,4 +346,23 @@
           san=@t
           special-draw-available=?
   ==  ==
+  ::
+  ::  (these have been moved from the agent to sur 
+  ::  so that they can be accessed in the Sail component file)
+  +$  active-game-state
+    $:  game=chess-game
+        position=chess-position
+        fen-repetition=(map @t @ud)
+        special-draw-available=?
+        auto-claim-special-draws=?
+        sent-draw-offer=?
+        got-draw-offer=?
+        sent-undo-request=?
+        got-undo-request=?
+        opponent=ship
+        practice-game=?
+    ==
+  +$  games  (map game-id active-game-state)
+  +$  challenges-sent  (map ship chess-challenge)
+  +$  challenges-received  (map ship chess-challenge)
 --
