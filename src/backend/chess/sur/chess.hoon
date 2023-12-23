@@ -365,4 +365,13 @@
   +$  games  (map game-id active-game-state)
   +$  challenges-sent  (map ship chess-challenge)
   +$  challenges-received  (map ship chess-challenge)
+  ::
+  ::  mast front-end state
+  +$  view  manx
+  +$  url  path
+  +$  menu-mode  ?(%settings %games %challenges)
+  +$  selected-game  ?(game-id ~)
+  +$  selected-piece  ?(chess-piece ~)
+  +$  available-moves  (set chess-square)
+  +$  available-threatens  (set chess-square)
 --

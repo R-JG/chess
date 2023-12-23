@@ -25,9 +25,9 @@
       rng-state=(map ship chess-commitment)
   ==
 +$  front-end
-  $:  view=manx  url=path
-      selected-piece=?(chess-piece ~)  available-moves=(set chess-square)
-      available-threatens=(set chess-square)
+  $:  =view  =url
+      =menu-mode  =selected-game  =selected-piece
+      =available-moves  =available-threatens
   ==
 +$  card  card:agent:gall
 ++  arch-orm  ((on game-id chess-game) gth)
@@ -49,7 +49,8 @@
       ==
     sail-sample
       :*  games  challenges-sent  challenges-received
-          selected-piece  available-moves  available-threatens
+          menu-mode  selected-game  selected-piece
+          available-moves  available-threatens
       ==
 ++  on-init
   on-init:default
@@ -91,6 +92,16 @@
       =/  client-poke  (parse-json:mast !<(json vase))
       ?+  tags.client-poke  (on-poke:default [mark vase])
         ::
+        [%click %select-game ~]
+          =/  atom-id-input=@t  (~(got by data.client-poke) '/target/id')
+          =/  id-val=game-id  (game-id (slav %ud atom-id-input))
+          ?:  =(id-val selected-game)
+            [~ this]
+          =.  selected-game  id-val
+          =/  new-view=manx  (rig:mast routes url sail-sample)
+          :_  this(view new-view)
+          [(gust:mast /display-updates view new-view) ~]
+        ::
         [%click %test-challenge ~]
           =/  axn  [%send-challenge our.bowl %random '' &]
           (send-challenge axn)
@@ -115,8 +126,8 @@
           ::  [(gust:mast /display-updates view new-view) cards]
         ::
         [%click %test-resign ~]
-          =/  id-input=@t  (~(got by data.client-poke) '/target/id')
-          =/  id-val=game-id  (slav %dau id-input)
+          =/  atom-id-input=@t  (~(got by data.client-poke) '/target/id')
+          =/  id-val=game-id  (game-id (slav %ud atom-id-input))
           =^  cards  this  (resign [%resign id-val])
           =/  new-view=manx  (rig:mast routes url sail-sample)
           :_  this(view new-view)
