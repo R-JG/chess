@@ -25,24 +25,18 @@
   ;div(class "menu")
     ;div(class "menu-tabs")
       ;div
-        =id  "challenges"
         =class  "tab challenges"
-        =event  "/click/set-menu-mode"
-        =return  "/target/id"
+        =event  "/click/set-menu-mode/challenges"
         ;+  ;/  "Challenges"
       ==
       ;div
-        =id  "games"
         =class  "tab games"
-        =event  "/click/set-menu-mode"
-        =return  "/target/id"
+        =event  "/click/set-menu-mode/games"
         ;+  ;/  "Games"
       ==
       ;div
-        =id  "settings"
         =class  "tab settings"
-        =event  "/click/set-menu-mode"
-        =return  "/target/id"
+        =event  "/click/set-menu-mode/settings"
         ;+  ;/  "Settings"
       ==
     ==
@@ -103,15 +97,11 @@
             ;p: {"Their side: {(trip challenger-side.chess-challenge)}"}
             ;p: {?:(practice-game.chess-challenge "Practice game" "")}
             ;button
-              =id  <ship>
-              =event  "/click/accept-challenge"
-              =return  "/target/id"
+              =event  "/click/accept-challenge/{<ship>}"
               ;+  ;/  "Accept"
             ==
             ;button
-              =id  <ship>
-              =event  "/click/decline-challenge"
-              =return  "/target/id"
+              =event  "/click/decline-challenge/{<ship>}"
               ;+  ;/  "Decline"
             ==
           ==
@@ -124,10 +114,8 @@
     ;*  %+  turn  `(list [game-id active-game-state])`~(tap by games)
       |=  [=game-id =active-game-state]
       ;div
-        =id  <(@ game-id)>
         =class  "game-selector {?:(=(selected-game game-id) "selected" "")}"
-        =event  "/click/select-game"
-        =return  "/target/id"
+        =event  "/click/select-game/{<(@ game-id)>}"
         ;p: {"Opponent: {<opponent.active-game-state>}"}
       ==
   ==

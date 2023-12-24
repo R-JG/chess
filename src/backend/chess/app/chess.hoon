@@ -90,17 +90,24 @@
     %json
       ?>  =(our.bowl src.bowl)
       =/  client-poke  (parse-json:mast !<(json vase))
-      ?+  tags.client-poke  (on-poke:default [mark vase])
+      ?.  &(?=(^ tags.client-poke) ?=(^ t.tags.client-poke))
+        ~&('tags are missing from client poke' (on-poke:default [mark vase]))
+      ?+  [i.tags.client-poke i.t.tags.client-poke]
+          ~&('client event not handled' (on-poke:default [mark vase]))
         ::
-        [%click %set-menu-mode ~]
-          =/  menu-val=@t  (~(got by data.client-poke) '/target/id')
+        [%click %set-menu-mode]
+          =/  menu-val=@ta  
+            ?~  t.t.tags.client-poke  ~&('set-menu-mode path missing' !!)
+            i.t.t.tags.client-poke
           =.  menu-mode  (^menu-mode menu-val)
           =/  new-view=manx  (rig:mast routes url sail-sample)
           :_  this(view new-view)
           [(gust:mast /display-updates view new-view) ~]
         ::
-        [%click %select-game ~]
-          =/  atom-id-input=@t  (~(got by data.client-poke) '/target/id')
+        [%click %select-game]
+          =/  atom-id-input=@ta
+            ?~  t.t.tags.client-poke  ~&('select-game path missing' !!)
+            i.t.t.tags.client-poke
           =/  id-val=game-id  (game-id (slav %ud atom-id-input))
           ?:  =(id-val selected-game)
             [~ this]
@@ -109,7 +116,7 @@
           :_  this(view new-view)
           [(gust:mast /display-updates view new-view) ~]
         ::
-        [%click %send-challenge ~]
+        [%click %send-challenge]
           =/  ship-input=@p
             (slav %p (~(got by data.client-poke) '/challenge-ship-input/value'))
           =/  note-input=@t
@@ -121,20 +128,24 @@
             =('true' (~(got by data.client-poke) '/challenge-practice-input/checked'))
           (send-challenge [%send-challenge ship-input side-input note-input practice-input])
         ::
-        [%click %accept-challenge ~]
+        [%click %accept-challenge]
           =/  challenger=@p
-            (slav %p (~(got by data.client-poke) '/target/id'))
+            %+  slav  %p
+            ?~  t.t.tags.client-poke  ~&('accept-challenge path missing' !!)
+            i.t.t.tags.client-poke
           (accept-challenge [%accept-challenge challenger])
         ::
-        [%click %decline-challenge ~]
+        [%click %decline-challenge]
           =/  challenger=@p
-            (slav %p (~(got by data.client-poke) '/target/id'))
+            %+  slav  %p
+            ?~  t.t.tags.client-poke  ~&('decline-challenge path missing' !!)
+            i.t.t.tags.client-poke
           =^  cards  this  (decline-challenge [%decline-challenge challenger])
           =/  new-view=manx  (rig:mast routes url sail-sample)
           :_  this(view new-view)
           [(gust:mast /display-updates view new-view) cards]
         ::
-        [%click %test-resign ~]
+        [%click %test-resign]
           =/  atom-id-input=@t  (~(got by data.client-poke) '/target/id')
           =/  id-val=game-id  (game-id (slav %ud atom-id-input))
           (resign [%resign id-val])
