@@ -3,6 +3,17 @@
 body {
   margin: 0;
 }
+main {
+  padding: 3rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: flex-start;
+}
+label {
+  margin-top: 0.5rem;
+  margin-left: 0.5rem;
+}
 .title {
   padding: 2rem;
   background-color: blue;
@@ -14,12 +25,52 @@ body {
   text-align: center;
 }
 .menu {
-  padding: 2rem;
-  background-color: blue;
+  width: 20rem;
+  border: 2px solid black;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
 }
-.games-tab {
-  padding: 2rem;
-  background-color: pink;
+.menu-tabs {
+  width: 100%;
+  padding-top: 0.5rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+}
+.tab {
+  padding: 1rem;
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 6px;
+  cursor: pointer;
+  transition: transform .1s ease;
+}
+.tab:hover {
+  transform: scale(1.05);
+}
+.tab.challenges {
+  background-color: orange;
+}
+.tab.games {
+  background-color: yellowgreen;
+}
+.tab.settings {
+  background-color: cornflowerblue;
+}
+.challenge-form {
+  background-color: lightgray;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+.challenges-menu, .games-menu, .settings-menu {
+  padding-inline: 2rem;
+  padding-bottom: 2rem;
+}
+.received-challenges {
+  background-color: lightgray;
+  padding: 1rem;
 }
 .game-selector {
   cursor: pointer;
@@ -30,7 +81,6 @@ body {
 .chessboard {
   height: 30rem;
   width: 30rem;
-  margin: 2rem;
   border: 6px solid #555;
   box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.5);
 }

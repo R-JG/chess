@@ -12,46 +12,129 @@
   ==
   ;body
     ;h1(class "title"): Chess
-    ;button
-      =event  "/click/test-challenge"
-      ;+  ;/  "TEST CHALLENGE"
+    ;main
+      ;button(id <(@ selected-game)>, event "/click/test-resign", return "/target/id"): TEST RESIGN
+      ;+  chessboard
+      ;+  menu
     ==
-    ;button
-      =event  "/click/test-decline"
-      ;+  ;/  "TEST DECLINE"
-    ==
-    ;button
-      =event  "/click/test-accept"
-      ;+  ;/  "TEST ACCEPT"
-    ==
-    ;div
-      ;h1: Challenges
-      ;*  %+  turn  ~(tap in ~(key by challenges-received))
-        |=  =ship
-        ;div: {<ship>}
-    ==
-    ;+  menu
-    ;+  chessboard
   ==
 ==
 ::
 ++  menu
-  :: a tab list for: games, challenges, settings
-  :: and a panel for viewing one of these options at a time
   ^-  manx
   ;div(class "menu")
-    ;div(class "games-tab")
-      ;*  %+  turn  `(list [game-id active-game-state])`~(tap by games)
-        |=  [=game-id =active-game-state]
-        ;div
-          =id  <(@ game-id)>
-          =class  "game-selector {?:(=(selected-game game-id) "selected" "")}"
-          =event  "/click/select-game"
-          =return  "/target/id"
-          ;p: {"Opponent: {<opponent.active-game-state>}"}
-        ==
+    ;div(class "menu-tabs")
+      ;div
+        =id  "challenges"
+        =class  "tab challenges"
+        =event  "/click/set-menu-mode"
+        =return  "/target/id"
+        ;+  ;/  "Challenges"
+      ==
+      ;div
+        =id  "games"
+        =class  "tab games"
+        =event  "/click/set-menu-mode"
+        =return  "/target/id"
+        ;+  ;/  "Games"
+      ==
+      ;div
+        =id  "settings"
+        =class  "tab settings"
+        =event  "/click/set-menu-mode"
+        =return  "/target/id"
+        ;+  ;/  "Settings"
+      ==
     ==
+    ;+  ?-  menu-mode
+          %challenges  challenges-menu
+          %games       games-menu
+          %settings    settings-menu
+        ==
   ==
+::
+++  challenges-menu
+  ^-  manx
+  ;div(class "challenges-menu")
+    ;p: Send a challenge:
+    ;div(class "challenge-form")
+      ;label
+        ;+  ;/  "Ship"
+        ;input(id "challenge-ship-input");
+      ==
+      ;label
+        ;+  ;/  "Note"
+        ;input(id "challenge-note-input");
+      ==
+      ;label
+        ;+  ;/  "Side"
+        ;select(id "challenge-side-input")
+          ;option(value "white"): White
+          ;option(value "black"): Black
+          ;option(value "random"): Random
+        ==
+      ==
+      ;label
+        ;+  ;/  "Practice"
+        ;input(type "checkbox", id "challenge-practice-input");
+      ==
+      ;button
+        =event  "/click/send-challenge"
+        =return  
+          """
+          /challenge-ship-input/value 
+          /challenge-note-input/value 
+          /challenge-side-input/value 
+          /challenge-practice-input/checked
+          """
+        ;+  ;/  "Send challenge"
+      ==
+    ==
+    ;p: Received Challenges:
+    ;+  ?:  =(0 ~(wyt by challenges-received))
+        ;div(class "received-challenges")
+          ;+  ;/  "You have not received any challenges."
+        ==
+      ;div(class "received-challenges")
+        ;*  %+  turn  ~(tap by challenges-received)
+          |=  [=ship =chess-challenge]
+          ;div(class "challenge")
+            ;p: {"Challenger: {<ship>}"}
+            ;p: {"Their side: {(trip challenger-side.chess-challenge)}"}
+            ;p: {?:(practice-game.chess-challenge "Practice game" "")}
+            ;button
+              =id  <ship>
+              =event  "/click/accept-challenge"
+              =return  "/target/id"
+              ;+  ;/  "Accept"
+            ==
+            ;button
+              =id  <ship>
+              =event  "/click/decline-challenge"
+              =return  "/target/id"
+              ;+  ;/  "Decline"
+            ==
+          ==
+      ==
+  ==
+::
+++  games-menu
+  ^-  manx
+  ;div(class "games-menu")
+    ;*  %+  turn  `(list [game-id active-game-state])`~(tap by games)
+      |=  [=game-id =active-game-state]
+      ;div
+        =id  <(@ game-id)>
+        =class  "game-selector {?:(=(selected-game game-id) "selected" "")}"
+        =event  "/click/select-game"
+        =return  "/target/id"
+        ;p: {"Opponent: {<opponent.active-game-state>}"}
+      ==
+  ==
+::
+++  settings-menu
+  ^-  manx
+  ;div(class "settings-menu");
 ::
 ++  game-panel
   ^-  manx

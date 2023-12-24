@@ -92,6 +92,13 @@
       =/  client-poke  (parse-json:mast !<(json vase))
       ?+  tags.client-poke  (on-poke:default [mark vase])
         ::
+        [%click %set-menu-mode ~]
+          =/  menu-val=@t  (~(got by data.client-poke) '/target/id')
+          =.  menu-mode  (^menu-mode menu-val)
+          =/  new-view=manx  (rig:mast routes url sail-sample)
+          :_  this(view new-view)
+          [(gust:mast /display-updates view new-view) ~]
+        ::
         [%click %select-game ~]
           =/  atom-id-input=@t  (~(got by data.client-poke) '/target/id')
           =/  id-val=game-id  (game-id (slav %ud atom-id-input))
@@ -102,36 +109,35 @@
           :_  this(view new-view)
           [(gust:mast /display-updates view new-view) ~]
         ::
-        [%click %test-challenge ~]
-          =/  axn  [%send-challenge our.bowl %random '' &]
-          (send-challenge axn)
-          ::  there only needs to be a display update here for e.g. clearing inputs, a popup message, etc.
-          ::
-          ::  =^  cards  this  (send-challenge axn)
-          ::  =/  new-view=manx  (rig:mast routes url sail-sample)
-          ::  :_  this(view new-view)
-          ::  [(gust:mast /display-updates view new-view) cards]
+        [%click %send-challenge ~]
+          =/  ship-input=@p
+            (slav %p (~(got by data.client-poke) '/challenge-ship-input/value'))
+          =/  note-input=@t
+            (~(got by data.client-poke) '/challenge-note-input/value')
+          =/  side-input
+            %-  ?(%white %black %random)
+            (~(got by data.client-poke) '/challenge-side-input/value')
+          =/  practice-input=?
+            =('true' (~(got by data.client-poke) '/challenge-practice-input/checked'))
+          (send-challenge [%send-challenge ship-input side-input note-input practice-input])
         ::
-        [%click %test-decline ~]
-          =^  cards  this  (decline-challenge [%decline-challenge ~zod])
+        [%click %accept-challenge ~]
+          =/  challenger=@p
+            (slav %p (~(got by data.client-poke) '/target/id'))
+          (accept-challenge [%accept-challenge challenger])
+        ::
+        [%click %decline-challenge ~]
+          =/  challenger=@p
+            (slav %p (~(got by data.client-poke) '/target/id'))
+          =^  cards  this  (decline-challenge [%decline-challenge challenger])
           =/  new-view=manx  (rig:mast routes url sail-sample)
           :_  this(view new-view)
           [(gust:mast /display-updates view new-view) cards]
-        ::
-        [%click %test-accept ~]
-          (accept-challenge [%accept-challenge ~zod])
-          ::  =^  cards  this  (accept-challenge [%accept-challenge ~zod])
-          ::  =/  new-view=manx  (rig:mast routes url sail-sample)
-          ::  :_  this(view new-view)
-          ::  [(gust:mast /display-updates view new-view) cards]
         ::
         [%click %test-resign ~]
           =/  atom-id-input=@t  (~(got by data.client-poke) '/target/id')
           =/  id-val=game-id  (game-id (slav %ud atom-id-input))
-          =^  cards  this  (resign [%resign id-val])
-          =/  new-view=manx  (rig:mast routes url sail-sample)
-          :_  this(view new-view)
-          [(gust:mast /display-updates view new-view) cards]
+          (resign [%resign id-val])
         ::
       ==
     ::
