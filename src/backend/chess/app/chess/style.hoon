@@ -105,6 +105,8 @@ label {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+.piece.our {
   cursor: pointer;
 }
 .piece.white {

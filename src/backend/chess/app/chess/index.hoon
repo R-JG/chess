@@ -1,5 +1,5 @@
 /-  *chess
-|=  $:  =games  =challenges-sent  =challenges-received
+|=  $:  =bowl:gall  =games  =challenges-sent  =challenges-received
         =menu-mode  =selected-game  =selected-piece
         =available-moves
     ==
@@ -151,10 +151,15 @@
         "{<(sub (@ -.chess-square) 97)>}00%"
       =/  trans-y=tape  ?:  =(%1 +.chess-square)  "0"
         "-{<(sub (@ +.chess-square) 1)>}00%"
+      =/  ownership=bean
+        ?-  -.chess-piece
+          %white  =(our.bowl white.game.u.game-to-render)
+          %black  =(our.bowl black.game.u.game-to-render)
+        ==
       ;div
-        =class  "piece {(trip -.chess-piece)}"
+        =class  "piece {(trip -.chess-piece)} {?:(ownership "our" "")}"
         =style  "transform: translate({trans-x}, {trans-y});"
-        =event  "/click/select-piece/{(trip -.chess-square)}/{<(@ +.chess-square)>}/{(trip -.chess-piece)}/{(trip +.chess-piece)}"
+        =event  ?.(ownership "" "/click/select-piece/{(trip -.chess-square)}/{<(@ +.chess-square)>}/{(trip -.chess-piece)}/{(trip +.chess-piece)}")
         ;+  ;/  (trip +.chess-piece)
       ==
   ==

@@ -48,7 +48,7 @@
       :~  [/chess index]
       ==
     sail-sample
-      :*  games  challenges-sent  challenges-received
+      :*  bowl  games  challenges-sent  challenges-received
           menu-mode  selected-game  selected-piece
           available-moves
       ==
@@ -151,17 +151,16 @@
                   ?=(^ t.t.t.t.tags.client-poke)  ?=(^ t.t.t.t.t.tags.client-poke)
               ==
             ~&('select-piece path missing' (on-poke:default [mark vase]))
-          =/  event-square
-            (chess-square [i.t.t.tags.client-poke (slav %ud i.t.t.t.tags.client-poke)])
-          =/  event-piece
+          =/  selection
+            :-  (chess-square [i.t.t.tags.client-poke (slav %ud i.t.t.t.tags.client-poke)])
             (chess-piece [i.t.t.t.t.tags.client-poke i.t.t.t.t.t.tags.client-poke])
-          =:  selected-piece  [event-square event-piece]
+          =:  selected-piece  ?:(=(selected-piece selection) ~ selection)
               available-moves
                 %-  silt
                 %~  moves-and-threatens
                   %~  with-piece-on-square  with-board
                     board.position:(~(got by games) selected-game)
-                [event-square event-piece]
+                selection
             ==
           =/  new-view=manx  (rig:mast routes url sail-sample)
           :_  this(view new-view)
