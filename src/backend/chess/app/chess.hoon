@@ -27,7 +27,7 @@
 +$  front-end
   $:  =view  =url
       =menu-mode  =selected-game  =selected-piece
-      =available-moves  =available-threatens
+      =available-moves
   ==
 +$  card  card:agent:gall
 ++  arch-orm  ((on game-id chess-game) gth)
@@ -50,7 +50,7 @@
     sail-sample
       :*  games  challenges-sent  challenges-received
           menu-mode  selected-game  selected-piece
-          available-moves  available-threatens
+          available-moves
       ==
 ++  on-init
   on-init:default
@@ -144,6 +144,28 @@
           =/  new-view=manx  (rig:mast routes url sail-sample)
           :_  this(view new-view)
           [(gust:mast /display-updates view new-view) cards]
+        ::
+        [%click %select-piece]
+          ?~  selected-game  ~&('no selected game when selecting piece' !!)
+          ?.  ?&  ?=(^ t.t.tags.client-poke)  ?=(^ t.t.t.tags.client-poke)
+                  ?=(^ t.t.t.t.tags.client-poke)  ?=(^ t.t.t.t.t.tags.client-poke)
+              ==
+            ~&('select-piece path missing' (on-poke:default [mark vase]))
+          =/  event-square
+            (chess-square [i.t.t.tags.client-poke (slav %ud i.t.t.t.tags.client-poke)])
+          =/  event-piece
+            (chess-piece [i.t.t.t.t.tags.client-poke i.t.t.t.t.t.tags.client-poke])
+          =:  selected-piece  [event-square event-piece]
+              available-moves
+                %-  silt
+                %~  moves-and-threatens
+                  %~  with-piece-on-square  with-board
+                    board.position:(~(got by games) selected-game)
+                [event-square event-piece]
+            ==
+          =/  new-view=manx  (rig:mast routes url sail-sample)
+          :_  this(view new-view)
+          [(gust:mast /display-updates view new-view) ~]
         ::
         [%click %test-resign]
           =/  atom-id-input=@t  (~(got by data.client-poke) '/target/id')
@@ -435,69 +457,7 @@
                   !>([%undo-accepted game-id.action])
           ==  ==
         %make-move
-          =/  game-state
-            ^-  (unit active-game-state)
-            (~(get by games) game-id.action)
-          ::  check for valid game
-          ?~  game-state
-            %+  poke-nack  this
-            "no active game with id {<game-id.action>}"
-          =/  ship-to-move
-            (ship-to-move u.game-state)
-          ::  check whether it's our turn
-          ?.  =(ship-to-move src.bowl)
-            %+  poke-nack  this
-            "not our move"
-          ::  check if the move is legal
-          =/  move-result  (do-move u.game-state move.action)
-          ::  reject invalid moves
-          ?~  move-result
-            %+  poke-nack
-              %=  this
-                ::  reset potential states after invalid move
-                potential-states  (~(put by potential-states) game-id.action ~)
-              ==
-            "invalid move for game {<game-id.action>}"
-          =*  new-game-state  new.u.move-result
-          ::  handle our end on ack
-          =/  future-states  (~(gut by potential-states) game-id.action ~)
-          :_
-            %=  this
-              potential-states  (~(put by potential-states) game-id.action (snoc future-states u.move-result))
-            ==
-          ::  is the game over?
-          ?~  result.game.new-game-state
-            ::  special draw available?
-            ?:  ?&  special-draw-available.new-game-state
-                    auto-claim-special-draws.u.game-state
-                ==
-              ::  tell opponent we claim a special conditions draw
-              :~  :*  %pass
-                      /poke/game/(scot %da game-id.action)/ended/[%'½–½']
-                      %agent
-                      [opponent.u.game-state %chess]
-                      %poke
-                      %chess-agent-action
-                      !>([%end-game game-id.action %'½–½' `move.action])
-              ==  ==
-            ::  regular move
-            :~  :*  %pass
-                    /poke/game/(scot %da game-id.action)/move
-                    %agent
-                    [opponent.u.game-state %chess]
-                    %poke
-                    %chess-agent-action
-                    !>([%receive-move game-id.action move.action])
-            ==  ==
-          ::  tell opponent checkmate or stalemate
-          :~  :*  %pass
-                  /poke/game/(scot %da game-id.action)/ended/[(need result.game.new-game-state)]
-                  %agent
-                  [opponent.u.game-state %chess]
-                  %poke
-                  %chess-agent-action
-                  !>([%end-game game-id.action (need result.game.new-game-state) `move.action])
-          ==  ==
+          (make-move action)
         %change-special-draw-preference
           =/  game-state
             ^-  (unit active-game-state)
@@ -1179,7 +1139,72 @@
   ::  ++  revoke-undo
   ::  ++  decline-undo
   ::  ++  accept-undo
-  ::  ++  make-move
+  ++  make-move
+    |=  [%make-move =game-id move=chess-move]
+    ^-  (quip card _this)
+    =/  game-state
+      ^-  (unit active-game-state)
+      (~(get by games) game-id)
+    ::  check for valid game
+    ?~  game-state
+      %+  poke-nack  this
+      "no active game with id {<game-id>}"
+    =/  ship-to-move
+      (ship-to-move u.game-state)
+    ::  check whether it's our turn
+    ?.  =(ship-to-move src.bowl)
+      %+  poke-nack  this
+      "not our move"
+    ::  check if the move is legal
+    =/  move-result  (do-move u.game-state move)
+    ::  reject invalid moves
+    ?~  move-result
+      %+  poke-nack
+        %=  this
+          ::  reset potential states after invalid move
+          potential-states  (~(put by potential-states) game-id ~)
+        ==
+      "invalid move for game {<game-id>}"
+    =*  new-game-state  new.u.move-result
+    ::  handle our end on ack
+    =/  future-states  (~(gut by potential-states) game-id ~)
+    :_
+      %=  this
+        potential-states  (~(put by potential-states) game-id (snoc future-states u.move-result))
+      ==
+    ::  is the game over?
+    ?~  result.game.new-game-state
+      ::  special draw available?
+      ?:  ?&  special-draw-available.new-game-state
+              auto-claim-special-draws.u.game-state
+          ==
+        ::  tell opponent we claim a special conditions draw
+        :~  :*  %pass
+                /poke/game/(scot %da game-id)/ended/[%'½–½']
+                %agent
+                [opponent.u.game-state %chess]
+                %poke
+                %chess-agent-action
+                !>([%end-game game-id %'½–½' `move])
+        ==  ==
+      ::  regular move
+      :~  :*  %pass
+              /poke/game/(scot %da game-id)/move
+              %agent
+              [opponent.u.game-state %chess]
+              %poke
+              %chess-agent-action
+              !>([%receive-move game-id move])
+      ==  ==
+    ::  tell opponent checkmate or stalemate
+    :~  :*  %pass
+            /poke/game/(scot %da game-id)/ended/[(need result.game.new-game-state)]
+            %agent
+            [opponent.u.game-state %chess]
+            %poke
+            %chess-agent-action
+            !>([%end-game game-id (need result.game.new-game-state) `move])
+    ==  ==
   ::  ++  change-special-draw-preference
   --
 ++  on-watch

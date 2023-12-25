@@ -76,7 +76,7 @@ label {
   cursor: pointer;
 }
 .game-selector.selected {
-  border: 3px solid black;
+  background-color: firebrick;
 }
 .chessboard {
   height: 30rem;
@@ -105,6 +105,7 @@ label {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  cursor: pointer;
 }
 .piece.white {
   color: black;
@@ -127,12 +128,22 @@ label {
   box-sizing: border-box;
   height: 12.5%;
   width: 12.5%;
-  border: 1px solid black;
+  transition: border 0.02s ease;
 }
-.square.light {
+.square.white {
   background-color: white;
 }
-.square.dark {
+.square.black {
   background-color: black;
+}
+.square.white.can-move {
+  border: 5px solid #9dccfa;
+  z-index: 1;
+  cursor: pointer;
+}
+.square.black.can-move {
+  border: 5px solid cornflowerblue;
+  z-index: 1;
+  cursor: pointer;
 }
 '''

@@ -371,7 +371,6 @@
   +$  url  path
   +$  menu-mode  ?(%settings %games %challenges)
   +$  selected-game  ?(game-id ~)
-  +$  selected-piece  ?(chess-piece ~)
+  +$  selected-piece  ?([square=chess-square piece=chess-piece] ~)
   +$  available-moves  (set chess-square)
-  +$  available-threatens  (set chess-square)
 --

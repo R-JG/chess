@@ -1,7 +1,7 @@
 /-  *chess
 |=  $:  =games  =challenges-sent  =challenges-received
         =menu-mode  =selected-game  =selected-piece
-        =available-moves  =available-threatens
+        =available-moves
     ==
 |^  ^-  manx
 ::
@@ -154,6 +154,7 @@
       ;div
         =class  "piece {(trip -.chess-piece)}"
         =style  "transform: translate({trans-x}, {trans-y});"
+        =event  "/click/select-piece/{(trip -.chess-square)}/{<(@ +.chess-square)>}/{(trip -.chess-piece)}/{(trip +.chess-piece)}"
         ;+  ;/  (trip +.chess-piece)
       ==
   ==
@@ -163,8 +164,6 @@
   ;div(class "squares-container")
     ;*  %+  turn  square-cells
       |=  =chess-square
-      ?:  (~(has in available-threatens) chess-square)
-        ;div(class "square threaten {(get-color chess-square)}");
       ?:  (~(has in available-moves) chess-square)
         ;div(class "square can-move {(get-color chess-square)}");
       ;div(class "square {(get-color chess-square)}");
@@ -183,11 +182,11 @@
   ^-  tape
   ?:  (bean (mod (@ -.chess-square) 2))
     ?:  (bean (mod (@ +.chess-square) 2))
-      "dark"
-    "light"
+      "black"
+    "white"
   ?:  (bean (mod (@ +.chess-square) 2))
-    "light"
-  "dark"
+    "white"
+  "black"
 ::
 ++  square-cells
   ^-  (list chess-square)
