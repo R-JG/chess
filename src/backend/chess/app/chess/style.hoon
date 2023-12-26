@@ -95,6 +95,7 @@ label {
 }
 .piece {
   position: absolute;
+  z-index: 3;
   box-sizing: border-box;
   font-size: 0.8rem;
   height: 12.5%;
@@ -105,6 +106,7 @@ label {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  transition: transform 1s ease;
 }
 .piece.our {
   cursor: pointer;

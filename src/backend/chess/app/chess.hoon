@@ -166,6 +166,17 @@
           :_  this(view new-view)
           [(gust:mast /display-updates view new-view) ~]
         ::
+        [%click %move-piece]
+          ?~  selected-game  
+            ~&('no selected game for move-piece' (on-poke:default [mark vase]))
+          ?~  selected-piece  
+            ~&('no selected piece for move-piece' (on-poke:default [mark vase]))
+          ?.  &(?=(^ t.t.tags.client-poke) ?=(^ t.t.t.tags.client-poke))
+            ~&('move-piece path missing' (on-poke:default [mark vase]))
+          =/  to  (chess-square [i.t.t.tags.client-poke (slav %ud i.t.t.t.tags.client-poke)])
+          =.  available-moves  ~
+          (make-move [%make-move selected-game %move square.selected-piece to ~])
+        ::
         [%click %test-resign]
           =/  atom-id-input=@t  (~(got by data.client-poke) '/target/id')
           =/  id-val=game-id  (game-id (slav %ud atom-id-input))

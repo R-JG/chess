@@ -157,6 +157,7 @@
           %black  =(our.bowl black.game.u.game-to-render)
         ==
       ;div
+        =key  "{(trip -.chess-square)}{(trip (@ +.chess-square))}{(trip -.chess-piece)}{(trip +.chess-piece)}"
         =class  "piece {(trip -.chess-piece)} {?:(ownership "our" "")}"
         =style  "transform: translate({trans-x}, {trans-y});"
         =event  ?.(ownership "" "/click/select-piece/{(trip -.chess-square)}/{<(@ +.chess-square)>}/{(trip -.chess-piece)}/{(trip +.chess-piece)}")
@@ -169,9 +170,7 @@
   ;div(class "squares-container")
     ;*  %+  turn  square-cells
       |=  =chess-square
-      ?:  (~(has in available-moves) chess-square)
-        ;div(class "square can-move {(get-color chess-square)}");
-      ;div(class "square {(get-color chess-square)}");
+      ;div(key "{(trip -.chess-square)}{(trip (@ +.chess-square))}", class "square {?:((~(has in available-moves) chess-square) "can-move" "")} {(get-color chess-square)}", event "/click/move-piece/{(trip -.chess-square)}/{<(@ +.chess-square)>}");
   ==
 ::
 ++  squares-without-selection
@@ -179,7 +178,7 @@
   ;div(class "squares-container")
     ;*  %+  turn  square-cells
       |=  =chess-square
-      ;div(class "square {(get-color chess-square)}");
+      ;div(key "{(trip -.chess-square)}{(trip (@ +.chess-square))}", class "square {(get-color chess-square)}");
   ==
 ::
 ++  get-color
