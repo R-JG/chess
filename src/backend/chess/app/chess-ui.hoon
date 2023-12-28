@@ -3,19 +3,19 @@
 /=  index  /app/chess-ui/index
 /=  style  /app/chess-ui/style
 |%
++$  source  @p
 +$  view  manx
 +$  url  path
-+$  menu-mode  ?(%settings %games %challenges)
-+$  selected-game  ?(game-id ~)
-+$  selected-piece  ?([square=chess-square piece=chess-piece] ~)
-+$  available-moves  (set chess-square)
 +$  ui-state
   $:  =view  =url
+      =games  =challenges-sent  =challenges-received
+      =menu-mode  =selected-game  =selected-piece
+      =available-moves
   ==
 +$  card  card:agent:gall
 --
 ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
-=|  ui-state
+=|  [=source ui-state]
 =*  state  -
 ^-  agent:gall
 |_  =bowl:gall
@@ -27,20 +27,55 @@
       :~  [/chess index]
       ==
     sail-sample
-      :*  bowl
+      :*  bowl  games  challenges-sent  challenges-received
+          menu-mode  selected-game  selected-piece
+          available-moves
       ==
 ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
-++  on-init  [~ this]
-++  on-save  !>(~)
+++  on-init
+  ^-  (quip card _this)
+  =.  source
+    ?:  =(%earl (clan:title our.bowl))
+      (sein:title our.bowl now.bowl our.bowl)
+    our.bowl
+  :_  this(+.state *ui-state)
+  :~  [%pass /bind %arvo %e %connect `/chess %chess-ui]
+      [%pass /challenges %agent [source %chess] %watch /challenges]
+      [%pass /active-games %agent [source %chess] %watch /active-games]
+      [%pass /get-state %agent [source %chess] %poke %chess-ui-agent !>([%get-state ~])]
+  ==
+++  on-save
+  !>(~)
 ++  on-load
   |=  *
-  :_  this(state *ui-state)
-  [[%pass /bind %arvo %e %connect `/chess %chess-ui] ~]
+  ^-  (quip card _this)
+  =.  source
+    ?:  =(%earl (clan:title our.bowl))
+      (sein:title our.bowl now.bowl our.bowl)
+    our.bowl
+  :_  this(+.state *ui-state)
+  :~  [%pass /bind %arvo %e %connect `/chess %chess-ui]
+      [%pass /challenges %agent [source %chess] %watch /challenges]
+      [%pass /active-games %agent [source %chess] %watch /active-games]
+      [%pass /get-state %agent [source %chess] %poke %chess-ui-agent !>([%get-state ~])]
+  ==
 ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
 ++  on-poke
   |=  [=mark =vase]
   ^-  (quip card _this)
   ?+  mark  (on-poke:def mark vase)
+    ::
+    %chess-ui-agent
+      =/  act  !<(chess-ui-agent vase)
+      ?+  -.act  (on-poke:def mark vase)
+        %give-state
+          :-  ~
+          %=  this
+            games                games.act
+            challenges-sent      challenges-sent.act
+            challenges-received  challenges-received.act
+          ==
+      ==
     ::
     %handle-http-request
       =+  !<([eyre-id=@ta req=inbound-request:eyre] vase)
@@ -64,8 +99,18 @@
       ?+  [i.tags.client-poke i.t.tags.client-poke]
           ~&('client event not handled' (on-poke:def [mark vase]))
         ::
-        [%click %test]
-          `this
+        [%click %test-challenge]
+          :_  this
+          :_  ~
+          :*  %pass   /test-challenge
+              %agent  [source %chess]
+              %poke   %chess-user-action
+              !>([%send-challenge ~zod %white 'test' &])
+          ==
+        ::
+        [%click %test-decline]
+          :_  this
+          [[%pass ~ %agent [source %chess] %poke %chess-user-action !>([%decline-challenge ~zod])] ~]
         ::
       ==
   ==
@@ -83,7 +128,28 @@
 ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
 ++  on-leave  on-leave:def
 ++  on-peek   on-peek:def
-++  on-agent  on-agent:def
+::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
+++  on-agent
+  |=  [=wire =sign:agent:gall]
+  ^-  (quip card _this)
+  ?+  wire  (on-agent:def wire sign)
+    ::
+    [%challenges ~]
+      ~&  'challenges agent path hit'
+      ~&  sign
+      `this
+    ::
+    [%active-games ~]
+      ~&  'active-games agent path hit'
+      ~&  sign
+      `this
+    ::
+    [%test-challenge ~]
+      ~&  'test-challenge poke res path hit'
+      ~&  sign
+      `this
+    ::
+  ==
 ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
 ++  on-arvo
   |=  [=wire =sign-arvo]

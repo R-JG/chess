@@ -1061,6 +1061,21 @@
                 !>([%reveal our-num.u.commitment])
         ==  ==
       ==
+    ::
+    ::  provisional mark for requesting state data instead of remote scrying
+    %chess-ui-agent
+      ?>  |(=(our.bowl src.bowl) (moon:title our.bowl src.bowl))
+      =/  action  !<(chess-ui-agent vase)
+      ?+  -.action  (on-poke:default mark vase)
+        %get-state
+          :_  this
+          :_  ~
+          :*  %pass   /ui-agent
+              %agent  [src.bowl %chess-ui]
+              %poke   %chess-ui-agent
+              !>([%give-state games challenges-sent challenges-received])
+          ==
+      ==
   ==
 ++  on-watch
   |=  =path
