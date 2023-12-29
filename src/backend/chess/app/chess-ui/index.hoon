@@ -95,7 +95,6 @@
           ;div(class "challenge")
             ;p: {"Challenger: {<ship>}"}
             ;p: {"Their side: {(trip challenger-side.chess-challenge)}"}
-            ;p: {?:(practice-game.chess-challenge "Practice game" "")}
             ;button
               =event  "/click/accept-challenge/{<ship>}"
               ;+  ;/  "Accept"
@@ -170,7 +169,7 @@
   ;div(class "squares-container")
     ;*  %+  turn  square-cells
       |=  =chess-square
-      ;div(key "{(trip -.chess-square)}{(trip (@ +.chess-square))}", class "square {?:((~(has in available-moves) chess-square) "can-move" "")} {(get-color chess-square)}", event "/click/move-piece/{(trip -.chess-square)}/{<(@ +.chess-square)>}");
+      ;div(class "square {?:((~(has in available-moves) chess-square) "can-move" "")} {(get-color chess-square)}", event "/click/move-piece/{(trip -.chess-square)}/{<(@ +.chess-square)>}");
   ==
 ::
 ++  squares-without-selection
@@ -178,7 +177,7 @@
   ;div(class "squares-container")
     ;*  %+  turn  square-cells
       |=  =chess-square
-      ;div(key "{(trip -.chess-square)}{(trip (@ +.chess-square))}", class "square {(get-color chess-square)}");
+      ;div(class "square {(get-color chess-square)}");
   ==
 ::
 ++  get-color

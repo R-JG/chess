@@ -346,6 +346,7 @@
           san=@t
           special-draw-available=?
   ==  ==
+::
 ::  (copied from the agent)
 +$  active-game-state
   $:  game=chess-game

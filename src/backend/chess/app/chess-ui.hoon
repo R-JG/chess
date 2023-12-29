@@ -1,5 +1,5 @@
 /-  *chess
-/+  *chess, default-agent, mast
+/+  chess, default-agent, mast
 /=  index  /app/chess-ui/index
 /=  style  /app/chess-ui/style
 |%
@@ -42,7 +42,6 @@
   :~  [%pass /bind %arvo %e %connect `/chess %chess-ui]
       [%pass /challenges %agent [source %chess] %watch /challenges]
       [%pass /active-games %agent [source %chess] %watch /active-games]
-      [%pass /get-state %agent [source %chess] %poke %chess-ui-agent !>([%get-state ~])]
   ==
 ++  on-save
   !>(~)
@@ -57,7 +56,6 @@
   :~  [%pass /bind %arvo %e %connect `/chess %chess-ui]
       [%pass /challenges %agent [source %chess] %watch /challenges]
       [%pass /active-games %agent [source %chess] %watch /active-games]
-      [%pass /get-state %agent [source %chess] %poke %chess-ui-agent !>([%get-state ~])]
   ==
 ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
 ++  on-poke
@@ -70,12 +68,13 @@
       ?+  -.act  (on-poke:def mark vase)
         ::  receive state data from the main agent (instead of using remote scry) 
         %give-state
-          :-  ~
-          %=  this
-            games                games.act
-            challenges-sent      challenges-sent.act
-            challenges-received  challenges-received.act
-          ==
+          =:  games                games.act
+              challenges-sent      challenges-sent.act
+              challenges-received  challenges-received.act
+            ==
+          =/  new-view=manx  (rig:mast routes url sail-sample)
+          :_  this(view new-view)
+          [(gust:mast /display-updates view new-view) ~]
       ==
     ::
     %handle-http-request
@@ -88,8 +87,9 @@
           ?:  =(/chess/style req-url)
             [(make-css-response:mast eyre-id style) this]
           =/  new-view=manx  (rig:mast routes req-url sail-sample)
-          :-  (plank:mast "chess-ui" /display-updates our.bowl eyre-id new-view)
-          this(view new-view, url req-url)
+          :_  this(view new-view, url req-url)
+          :-  [%pass /get-state %agent [source %chess] %poke %chess-ui-agent !>([%get-state ~])]
+          (plank:mast "chess-ui" /display-updates our.bowl eyre-id new-view)
       ==
     ::
     %json
@@ -120,6 +120,45 @@
           =/  new-view=manx  (rig:mast routes url sail-sample)
           :_  this(view new-view)
           [(gust:mast /display-updates view new-view) ~]
+        ::
+        [%click %select-piece]
+          ?~  selected-game  ~&('no selected game when selecting piece' !!)
+          ?.  ?&  ?=(^ t.t.tags.client-poke)  ?=(^ t.t.t.tags.client-poke)
+                  ?=(^ t.t.t.t.tags.client-poke)  ?=(^ t.t.t.t.t.tags.client-poke)
+              ==
+            ~&('select-piece path missing' (on-poke:def [mark vase]))
+          =/  selection
+            :-  (chess-square [i.t.t.tags.client-poke (slav %ud i.t.t.t.tags.client-poke)])
+            (chess-piece [i.t.t.t.t.tags.client-poke i.t.t.t.t.t.tags.client-poke])
+          =:  selected-piece  ?:(=(selected-piece selection) ~ selection)
+              available-moves
+                %-  silt
+                %~  moves-and-threatens
+                  %~  with-piece-on-square  with-board.chess
+                    board.position:(~(got by games) selected-game)
+                selection
+            ==
+          =/  new-view=manx  (rig:mast routes url sail-sample)
+          :_  this(view new-view)
+          [(gust:mast /display-updates view new-view) ~]
+        ::
+        [%click %move-piece]
+          ?~  selected-game  
+            ~&('no selected game for move-piece' (on-poke:def [mark vase]))
+          ?~  selected-piece  
+            ~&('no selected piece for move-piece' (on-poke:def [mark vase]))
+          ?.  &(?=(^ t.t.tags.client-poke) ?=(^ t.t.t.tags.client-poke))
+            ~&('move-piece path missing' (on-poke:def [mark vase]))
+          =/  to  (chess-square [i.t.t.tags.client-poke (slav %ud i.t.t.t.tags.client-poke)])
+          =.  available-moves  ~
+          =/  new-view=manx  (rig:mast routes url sail-sample)
+          :_  this(view new-view)
+          :~  (gust:mast /display-updates view new-view)
+              :*  %pass   /move-piece
+                  %agent  [source %chess]
+                  %poke   %chess-user-action
+                  !>([%make-move selected-game %move square.selected-piece to ~])
+          ==  ==
         ::
         [%click %send-challenge]
           =/  ship-input=@p
@@ -218,8 +257,6 @@
                 %challenge-sent
                   =.  challenges-sent
                     (~(put by challenges-sent) who.update challenge.update)
-                  ~&  >  'new in challenges-sent'
-                  ~&  >  challenges-sent
                   =/  new-view=manx  (rig:mast routes url sail-sample)
                   :_  this(view new-view)
                   [(gust:mast /display-updates view new-view) ~]
@@ -227,8 +264,6 @@
                 %challenge-received
                   =.  challenges-received
                     (~(put by challenges-received) who.update challenge.update)
-                  ~&  >  'new in challenges-received'
-                  ~&  >  challenges-received
                   =/  new-view=manx  (rig:mast routes url sail-sample)
                   :_  this(view new-view)
                   [(gust:mast /display-updates view new-view) ~]
@@ -236,8 +271,6 @@
                 %challenge-resolved
                   =.  challenges-sent
                     (~(del by challenges-sent) who.update)
-                  ~&  >  'del in challenges-sent'
-                  ~&  >  challenges-sent
                   =/  new-view=manx  (rig:mast routes url sail-sample)
                   :_  this(view new-view)
                   [(gust:mast /display-updates view new-view) ~]
@@ -245,8 +278,6 @@
                 %challenge-replied
                   =.  challenges-received
                     (~(del by challenges-received) who.update)
-                  ~&  >  'del in challenges-received'
-                  ~&  >  challenges-received
                   =/  new-view=manx  (rig:mast routes url sail-sample)
                   :_  this(view new-view)
                   [(gust:mast /display-updates view new-view) ~]
@@ -279,15 +310,56 @@
                     sent-undo-request=%.n
                     got-undo-request=%.n
                     opponent
-                    :: XX: need practice-game
+                    :: XX: need challenger's practice-game selection
                     practice-game=%.n
                 ==
               =.  games  (~(put by games) game-id.chess-game-data new-game)
-              ~&  >  'new in games'
-              ~&  >  games
               =/  new-view=manx  (rig:mast routes url sail-sample)
               :_  this(view new-view)
-              [(gust:mast /display-updates view new-view) ~]
+              :~  (gust:mast /display-updates view new-view)
+                  :*  %pass   /game-updates 
+                      %agent  [source %chess] 
+                      %watch  /game/(scot %da game-id.chess-game-data)/updates
+              ==  ==
+          ==
+      ==
+    ::
+    [%game-updates ~]
+      ?+  -.sign  (on-agent:def wire sign)
+        %fact
+          ?+  p.cage.sign  (on-agent:def wire sign)
+            %chess-update
+              =/  update  !<(chess-update q.cage.sign)
+              ?+  -.update  (on-agent:def wire sign)
+                ::
+                %position
+                  =/  from-data=tape  (trip p.move.update)
+                  =/  to-data=tape  (trip q.move.update)
+                  =/  from=chess-square
+                    ?.  &(?=(^ from-data) ?=(^ t.from-data))
+                      ~&('game-updates: data missing' !!)
+                    (chess-square [i.from-data (slav %ud i.t.from-data)])
+                  =/  to=chess-square
+                    ?.  &(?=(^ to-data) ?=(^ t.to-data))
+                      ~&('game-updates: data missing' !!)
+                    (chess-square [i.to-data (slav %ud i.t.to-data)])
+                  =/  game=(unit active-game-state)  (~(get by games) game-id.update)
+                  ?~  game  ~&('game-updates: data missing' !!)
+                  =/  piece=(unit chess-piece)  (~(get by board.position.u.game) from)
+                  ?~  piece  
+                    ::  because %position is hit twice if we are facing ourselves:
+                    ::  ignore the second (where the piece has already been moved).
+                    ?:  =(our.bowl opponent.u.game)
+                      `this
+                    ~&('game-updates: ui data missing' !!)
+                  =.  board.position.u.game
+                    (~(put by (~(del by board.position.u.game) from)) to u.piece)
+                  =.  games  (~(put by games) game-id.update u.game)
+                  =/  new-view=manx  (rig:mast routes url sail-sample)
+                  :_  this(view new-view)
+                  [(gust:mast /display-updates view new-view) ~]
+                ::
+              ==
           ==
       ==
     ::
