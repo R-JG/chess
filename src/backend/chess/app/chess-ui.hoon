@@ -4,7 +4,7 @@
 /=  style  /app/chess-ui/style
 |%
 +$  source  @p
-+$  view  manx
++$  view  $~([[%html ~] [[%head ~] ~] [[%body ~] ~] ~] manx)
 +$  url  path
 +$  ui-state
   $:  =view  =url
@@ -196,13 +196,19 @@
 ++  on-agent
   |=  [=wire =sign:agent:gall]
   ^-  (quip card _this)
-  ~&  >  'on-agent hit'
-  ~&  >  wire
+  ~&  >>  'on-agent hit'
+  ~&  >>  wire
   ~&  >  sign
   ?+  wire  (on-agent:def wire sign)
     ::
     [%challenges ~]
       ?+  -.sign  (on-agent:def wire sign)
+        ::
+        %kick
+          :_  this
+          :_  ~
+          [%pass /challenges %agent [source %chess] %watch /challenges]
+        ::
         %fact
           ?+  p.cage.sign  (on-agent:def wire sign)
             %chess-update
@@ -250,11 +256,33 @@
     ::
     [%active-games ~]
       ?+  -.sign  (on-agent:def wire sign)
+        ::
+        %kick
+          :_  this
+          :_  ~
+          [%pass /active-games %agent [source %chess] %watch /active-games]
+        ::
         %fact
           ?+  p.cage.sign  (on-agent:def wire sign)
             %chess-game-active
-              =/  new-game  !<(active-game-state q.cage.sign)
-              =.  games  (~(put by games) game-id.game.new-game new-game)
+              =/  chess-game-data  !<(chess-game q.cage.sign)
+              =/  opponent
+                ?:(=(source white.chess-game-data) black.chess-game-data white.chess-game-data)
+              =/  new-game=active-game-state  
+                :*  chess-game-data
+                    *chess-position
+                    *fen-repetition=(map @t @ud)
+                    special-draw-available=%.n
+                    auto-claim-special-draws=%.n
+                    sent-draw-offer=%.n
+                    got-draw-offer=%.n
+                    sent-undo-request=%.n
+                    got-undo-request=%.n
+                    opponent
+                    :: XX: need practice-game
+                    practice-game=%.n
+                ==
+              =.  games  (~(put by games) game-id.chess-game-data new-game)
               ~&  >  'new in games'
               ~&  >  games
               =/  new-view=manx  (rig:mast routes url sail-sample)
