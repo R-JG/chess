@@ -155,9 +155,13 @@
           %white  =(our.bowl white.game.u.game-to-render)
           %black  =(our.bowl black.game.u.game-to-render)
         ==
+      =/  is-its-turn=bean
+        ?:  (bean (mod (lent moves.game.u.game-to-render) 2))
+          =(%white -.chess-piece)
+        =(%black -.chess-piece)
       ;div
-        =key  "{(trip -.chess-square)}{(trip (@ +.chess-square))}{(trip -.chess-piece)}{(trip +.chess-piece)}"
-        =class  "piece {(trip -.chess-piece)} {?:(ownership "our" "")}"
+        =key  "{(trip -.chess-square)}{<(@ +.chess-square)>}{(trip -.chess-piece)}{(trip +.chess-piece)}"
+        =class  "piece {(trip -.chess-piece)} {?:(&(ownership is-its-turn) "active" "")}"
         =style  "transform: translate({trans-x}, {trans-y});"
         =event  ?.(ownership "" "/click/select-piece/{(trip -.chess-square)}/{<(@ +.chess-square)>}/{(trip -.chess-piece)}/{(trip +.chess-piece)}")
         ;+  ;/  (trip +.chess-piece)
@@ -179,7 +183,7 @@
       |=  =chess-square
       ;div(class "square {(get-color chess-square)}");
   ==
-::
+::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
 ++  get-color
   |=  =chess-square
   ^-  tape

@@ -107,8 +107,10 @@ label {
   justify-content: center;
   align-items: center;
   transition: transform 1s ease;
+  pointer-events: none;
 }
-.piece.our {
+.piece.active {
+  pointer-events: all;
   cursor: pointer;
 }
 .piece.white {

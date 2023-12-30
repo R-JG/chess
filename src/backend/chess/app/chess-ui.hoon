@@ -66,7 +66,9 @@
     %chess-ui-agent
       =/  act  !<(chess-ui-agent vase)
       ?+  -.act  (on-poke:def mark vase)
-        ::  receive state data from the main agent (instead of using remote scry) 
+        ::
+        ::  receive state data from the main agent (instead of using remote scry)
+        ::  requested on http get
         %give-state
           =:  games                games.act
               challenges-sent      challenges-sent.act
@@ -235,9 +237,9 @@
 ++  on-agent
   |=  [=wire =sign:agent:gall]
   ^-  (quip card _this)
-  ~&  >>  'on-agent hit'
-  ~&  >>  wire
-  ~&  >  sign
+  ::  ~&  >>  'on-agent'
+  ::  ~&  >>  wire
+  ::  ~&  >  sign
   ?+  wire  (on-agent:def wire sign)
     ::
     [%challenges ~]
@@ -354,6 +356,10 @@
                     ~&('game-updates: ui data missing' !!)
                   =.  board.position.u.game
                     (~(put by (~(del by board.position.u.game) from)) to u.piece)
+                  =.  moves.game.u.game
+                    %+  snoc  moves.game.u.game
+                    ::  XX: add proper into=(unit chess-promotion) instead of ~
+                    [[%move from to ~] position.update san.update]
                   =.  games  (~(put by games) game-id.update u.game)
                   =/  new-view=manx  (rig:mast routes url sail-sample)
                   :_  this(view new-view)
