@@ -9,8 +9,8 @@
 +$  ui-state
   $:  =view  =url
       =games  =challenges-sent  =challenges-received
-      =menu-mode  =selected-game  =selected-piece
-      =available-moves
+      =menu-mode  =selected-game-id  =selected-game-pieces
+      =selected-piece  =available-moves
   ==
 +$  card  card:agent:gall
 --
@@ -28,8 +28,8 @@
       ==
     sail-sample
       :*  bowl  games  challenges-sent  challenges-received
-          menu-mode  selected-game  selected-piece
-          available-moves
+          menu-mode  selected-game-id  selected-game-pieces
+          selected-piece  available-moves
       ==
 ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
 ++  on-init
@@ -116,15 +116,21 @@
             ?~  t.t.tags.client-poke  ~&('select-game path missing' !!)
             i.t.t.tags.client-poke
           =/  id-val=game-id  (game-id (slav %ud atom-id-input))
-          ?:  =(id-val selected-game)
+          ?:  =(id-val selected-game-id)
             [~ this]
-          =.  selected-game  id-val
+          =:  selected-game-id  id-val
+              selected-game-pieces
+                ^-  ui-board
+                %-  %~  rep  by  board.position:(~(got by games) id-val)
+                |=  [[k=chess-square v=chess-piece] acc=ui-board]
+                [[(weld <(@ -.k)> <(@ +.k)>) k v] acc]
+            ==
           =/  new-view=manx  (rig:mast routes url sail-sample)
           :_  this(view new-view)
           [(gust:mast /display-updates view new-view) ~]
         ::
         [%click %select-piece]
-          ?~  selected-game  ~&('no selected game when selecting piece' !!)
+          ?~  selected-game-id  ~&('no selected game when selecting piece' !!)
           ?.  ?&  ?=(^ t.t.tags.client-poke)  ?=(^ t.t.t.tags.client-poke)
                   ?=(^ t.t.t.t.tags.client-poke)  ?=(^ t.t.t.t.t.tags.client-poke)
               ==
@@ -137,7 +143,7 @@
                 %-  silt
                 %~  moves-and-threatens
                   %~  with-piece-on-square  with-board.chess
-                    board.position:(~(got by games) selected-game)
+                    board.position:(~(got by games) selected-game-id)
                 selection
             ==
           =/  new-view=manx  (rig:mast routes url sail-sample)
@@ -145,7 +151,7 @@
           [(gust:mast /display-updates view new-view) ~]
         ::
         [%click %move-piece]
-          ?~  selected-game  
+          ?~  selected-game-id  
             ~&('no selected game for move-piece' (on-poke:def [mark vase]))
           ?~  selected-piece  
             ~&('no selected piece for move-piece' (on-poke:def [mark vase]))
@@ -159,7 +165,7 @@
               :*  %pass   /move-piece
                   %agent  [source %chess]
                   %poke   %chess-user-action
-                  !>([%make-move selected-game %move square.selected-piece to ~])
+                  !>([%make-move selected-game-id %move chess-square.selected-piece to ~])
           ==  ==
         ::
         [%click %send-challenge]
@@ -361,6 +367,15 @@
                     ::  XX: add proper into=(unit chess-promotion) instead of ~
                     [[%move from to ~] position.update san.update]
                   =.  games  (~(put by games) game-id.update u.game)
+                  =?  selected-game-pieces  =(game-id.update selected-game-id)
+                    |-
+                    ?~  selected-game-pieces  ~
+                    ?:  =(to chess-square.i.selected-game-pieces)
+                      $(selected-game-pieces t.selected-game-pieces)
+                    :-  ?.  =(from chess-square.i.selected-game-pieces)
+                          i.selected-game-pieces
+                        [key.i.selected-game-pieces to chess-piece.i.selected-game-pieces]
+                    $(selected-game-pieces t.selected-game-pieces)
                   =/  new-view=manx  (rig:mast routes url sail-sample)
                   :_  this(view new-view)
                   [(gust:mast /display-updates view new-view) ~]

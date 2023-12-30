@@ -366,9 +366,11 @@
 +$  challenges-received  (map ship chess-challenge)
 ::
 ::  ui agent state
++$  ui-board  (list [key=tape =chess-square =chess-piece])
 +$  menu-mode  ?(%settings %games %challenges)
-+$  selected-game  ?(game-id ~)
-+$  selected-piece  ?([square=chess-square piece=chess-piece] ~)
++$  selected-game-id  ?(game-id ~)
++$  selected-game-pieces  ui-board
++$  selected-piece  ?([=chess-square =chess-piece] ~)
 +$  available-moves  (set chess-square)
 ::
 ::  ui agent related actions

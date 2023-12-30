@@ -1,7 +1,7 @@
 /-  *chess
 |=  $:  =bowl:gall  =games  =challenges-sent  =challenges-received
-        =menu-mode  =selected-game  =selected-piece
-        =available-moves
+        =menu-mode  =selected-game-id  =selected-game-pieces
+        =selected-piece  =available-moves
     ==
 |^  ^-  manx
 ::
@@ -13,7 +13,7 @@
   ;body
     ;h1(class "title"): Chess
     ;main
-      ;button(id <(@ selected-game)>, event "/click/test-resign", return "/target/id"): TEST RESIGN
+      ;button(id <(@ selected-game-id)>, event "/click/test-resign", return "/target/id"): TEST RESIGN
       ;+  chessboard
       ;+  menu
     ==
@@ -113,7 +113,7 @@
     ;*  %+  turn  `(list [game-id active-game-state])`~(tap by games)
       |=  [=game-id =active-game-state]
       ;div
-        =class  "game-selector {?:(=(selected-game game-id) "selected" "")}"
+        =class  "game-selector {?:(=(selected-game-id game-id) "selected" "")}"
         =event  "/click/select-game/{<(@ game-id)>}"
         ;p: {"Opponent: {<opponent.active-game-state>}"}
       ==
@@ -139,13 +139,13 @@
 ++  pieces-on-board
   ^-  manx
   =/  game-to-render=(unit active-game-state) 
-    ?~  selected-game  ~
-    (~(get by games) selected-game)
+    ?~  selected-game-id  ~
+    (~(get by games) selected-game-id)
   ?~  game-to-render
     ;div(class "pieces-container");
   ;div(class "pieces-container")
-    ;*  %+  turn  ~(tap by board.position.u.game-to-render)
-      |=  [=chess-square =chess-piece]
+    ;*  %+  turn  selected-game-pieces
+      |=  [key=tape =chess-square =chess-piece]
       =/  trans-x=tape  ?:  =(%a -.chess-square)  "0"
         "{<(sub (@ -.chess-square) 97)>}00%"
       =/  trans-y=tape  ?:  =(%1 +.chess-square)  "0"
@@ -160,7 +160,7 @@
           =(%white -.chess-piece)
         =(%black -.chess-piece)
       ;div
-        =key  "{(trip -.chess-square)}{<(@ +.chess-square)>}{(trip -.chess-piece)}{(trip +.chess-piece)}"
+        =key    key
         =class  "piece {(trip -.chess-piece)} {?:(&(ownership is-its-turn) "active" "")}"
         =style  "transform: translate({trans-x}, {trans-y});"
         =event  ?.(ownership "" "/click/select-piece/{(trip -.chess-square)}/{<(@ +.chess-square)>}/{(trip -.chess-piece)}/{(trip +.chess-piece)}")

@@ -106,7 +106,7 @@ label {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  transition: transform 1s ease;
+  transition: transform 0.3s cubic-bezier(.47,.06,.77,1.12);
   pointer-events: none;
 }
 .piece.active {
@@ -134,7 +134,7 @@ label {
   box-sizing: border-box;
   height: 12.5%;
   width: 12.5%;
-  transition: border 0.02s ease;
+  transition: border 0.05s cubic-bezier(.2,.37,.52,.98);
 }
 .square.white {
   background-color: white;
