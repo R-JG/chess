@@ -74,6 +74,11 @@
               challenges-sent      challenges-sent.act
               challenges-received  challenges-received.act
             ==
+          =?  selected-game-pieces  !=(~ selected-game-id)
+            ^-  ui-board
+            %-  %~  rep  by  board.position:(~(got by games) (game-id selected-game-id))
+            |=  [[k=chess-square v=chess-piece] acc=ui-board]
+            [[(weld <(@ -.k)> <(@ +.k)>) k v] acc]
           =/  new-view=manx  (rig:mast routes url sail-sample)
           :_  this(view new-view)
           [(gust:mast /display-updates view new-view) ~]
@@ -338,6 +343,8 @@
           ?+  p.cage.sign  (on-agent:def wire sign)
             %chess-update
               =/  update  !<(chess-update q.cage.sign)
+              ~&  >  'GAME UPDATE'
+              ~&  >>  update
               ?+  -.update  (on-agent:def wire sign)
                 ::
                 %position
@@ -360,8 +367,16 @@
                     ?:  =(our.bowl opponent.u.game)
                       `this
                     ~&('game-updates: ui data missing' !!)
+                  =/  en-passant-capture=?(chess-square ~)
+                    ?:  ?&  =(%pawn +.u.piece)  !=(-.from -.to)
+                            !(~(has by board.position.u.game) to)
+                        ==
+                      [-.to +.from]
+                    ~
                   =.  board.position.u.game
                     (~(put by (~(del by board.position.u.game) from)) to u.piece)
+                  =?  board.position.u.game  ?=(^ en-passant-capture)
+                    (~(del by board.position.u.game) en-passant-capture)
                   =.  moves.game.u.game
                     %+  snoc  moves.game.u.game
                     ::  XX: add proper into=(unit chess-promotion) instead of ~
@@ -370,8 +385,10 @@
                   =?  selected-game-pieces  =(game-id.update selected-game-id)
                     |-
                     ?~  selected-game-pieces  ~
-                    ?:  =(to chess-square.i.selected-game-pieces)
-                      $(selected-game-pieces t.selected-game-pieces)
+                    ?:  ?|  =(to chess-square.i.selected-game-pieces)
+                            =(en-passant-capture chess-square.i.selected-game-pieces)
+                        ==
+                      $(selected-game-pieces t.selected-game-pieces)                      
                     :-  ?.  =(from chess-square.i.selected-game-pieces)
                           i.selected-game-pieces
                         [key.i.selected-game-pieces to chess-piece.i.selected-game-pieces]
