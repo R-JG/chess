@@ -2,8 +2,6 @@
 '''
 body {
   margin: 0;
-}
-main {
   padding: 3rem;
   display: flex;
   flex-direction: row;
@@ -13,16 +11,6 @@ main {
 label {
   margin-top: 0.5rem;
   margin-left: 0.5rem;
-}
-.title {
-  padding: 2rem;
-  background-color: blue;
-}
-.title span {
-  padding: 0.6rem;
-  background-color: pink;
-  display: block;
-  text-align: center;
 }
 .menu {
   width: 20rem;

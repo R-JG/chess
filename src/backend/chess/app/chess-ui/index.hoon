@@ -17,12 +17,9 @@
     ;link(href "/chess/img/white-king", rel "preload", as "image");
   ==
   ;body
-    ;h1(class "title"): Chess
-    ;main
-      ;button(id <(@ selected-game-id)>, event "/click/test-resign", return "/target/id"): TEST RESIGN
-      ;+  chessboard
-      ;+  menu
-    ==
+    ;+  game-panel
+    ;+  chessboard
+    ;+  menu
   ==
 ==
 ::
@@ -131,7 +128,9 @@
 ::
 ++  game-panel
   ^-  manx
-  ;div;
+  ?~  selected-game-id
+    ;div(class "game-panel");
+  ;div(class "game-panel");
 ::
 ++  chessboard
   ^-  manx
@@ -170,7 +169,7 @@
         =class  "piece {(trip -.chess-piece)} on-{(get-color chess-square)} {?:(&(ownership is-its-turn) "act" "")} {?:(&(?=(^ selected-piece) =(chess-square -.selected-piece)) "sel" "")}"
         =style  "transform: translate({trans-x}, {trans-y});"
         =event  ?.(ownership "" "/click/select-piece/{(trip -.chess-square)}/{<(@ +.chess-square)>}/{(trip -.chess-piece)}/{(trip +.chess-piece)}")
-        ;img(src "/chess/img/white-{(trip +.chess-piece)}", alt (trip +.chess-piece));
+        ;img(src "/chess/img/white-{(trip +.chess-piece)}");
       ==
   ==
 ::

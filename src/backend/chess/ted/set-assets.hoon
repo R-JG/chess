@@ -6,7 +6,6 @@
 =/  m  (strand ,vase)
 ^-  form:m
 |=  strand-input:strand
-~&  >>>  'setting asset cache...'
 :_  [%done arg]
 :~  [%pass /set-assets %arvo %e %set-response '/chess/img/white-pawn' ~ & %payload (make-svg-payload white-pawn)]
     [%pass /set-assets %arvo %e %set-response '/chess/img/white-knight' ~ & %payload (make-svg-payload white-knight)]

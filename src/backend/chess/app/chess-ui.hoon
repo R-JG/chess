@@ -79,14 +79,14 @@
           =:  games                games.act
               challenges-sent      challenges-sent.act
               challenges-received  challenges-received.act
-              selected-game-pieces  
-                ^-  ui-board
-                ?~  selected-game-id
-                  ~
-                %-  %~  rep  by  board.position:(~(got by games) (game-id selected-game-id))
-                |=  [[k=chess-square v=chess-piece] acc=ui-board]
-                [[(weld <(@ -.k)> <(@ +.k)>) k v] acc]
             ==
+          =.  selected-game-pieces
+            ^-  ui-board
+            ?~  selected-game-id
+              ~
+            %-  %~  rep  by  board.position:(~(got by games) (game-id selected-game-id))
+            |=  [[k=chess-square v=chess-piece] acc=ui-board]
+            [[(weld <(@ -.k)> <(@ +.k)>) k v] acc]
           =/  new-view=manx  (rig:mast routes url sail-sample)
           :_  this(view new-view)
           [(gust:mast /display-updates view new-view) ~]
