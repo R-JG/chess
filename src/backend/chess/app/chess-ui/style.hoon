@@ -100,19 +100,30 @@ label {
   font-size: 0.8rem;
   height: 12.5%;
   width: 12.5%;
-  border: 10px solid yellowgreen;
-  border-radius: 5rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  transition: transform 0.3s cubic-bezier(.47,.06,.77,1.12);
+  transition: transform 0.3s cubic-bezier(.47,.06,.77,1.12), background 0.05s ease;
   pointer-events: none;
 }
-.piece.active {
+.piece.on-white:hover {
+  background-color: #9dccfa;
+}
+.piece.on-black:hover {
+  background-color: cornflowerblue;
+}
+.piece.on-white.sel {
+  background-color: #9dccfa;
+}
+.piece.on-black.sel {
+  background-color: cornflowerblue;
+}
+.piece.act {
   pointer-events: all;
   cursor: pointer;
 }
+/*
 .piece.white {
   color: black;
   background-color: white;
@@ -120,6 +131,14 @@ label {
 .piece.black {
   color: white;
   background-color: black;
+}
+*/
+.piece img {
+  width: 100%;
+  height: 100%;
+}
+.piece.black img {
+  filter: invert();
 }
 .squares-container {
   height: 100%;
@@ -134,7 +153,7 @@ label {
   box-sizing: border-box;
   height: 12.5%;
   width: 12.5%;
-  transition: border 0.05s cubic-bezier(.2,.37,.52,.98);
+  transition: border 0.05s cubic-bezier(.2,.37,.52,.98), background 0.05s ease;
 }
 .square.white {
   background-color: white;
@@ -147,9 +166,15 @@ label {
   z-index: 1;
   cursor: pointer;
 }
+.square.white.can-move:hover {
+  background-color: #9dccfa;
+}
 .square.black.can-move {
   border: 5px solid cornflowerblue;
   z-index: 1;
   cursor: pointer;
+}
+.square.black.can-move:hover {
+  background-color: cornflowerblue;
 }
 '''

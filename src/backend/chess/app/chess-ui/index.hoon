@@ -9,6 +9,12 @@
   ;head
     ;meta(charset "utf-8");
     ;link(href "/chess/style", rel "stylesheet");
+    ;link(href "/chess/img/white-pawn", rel "preload", as "image");
+    ;link(href "/chess/img/white-knight", rel "preload", as "image");
+    ;link(href "/chess/img/white-bishop", rel "preload", as "image");
+    ;link(href "/chess/img/white-rook", rel "preload", as "image");
+    ;link(href "/chess/img/white-queen", rel "preload", as "image");
+    ;link(href "/chess/img/white-king", rel "preload", as "image");
   ==
   ;body
     ;h1(class "title"): Chess
@@ -161,10 +167,10 @@
         =(%black -.chess-piece)
       ;div
         =key    key
-        =class  "piece {(trip -.chess-piece)} {?:(&(ownership is-its-turn) "active" "")}"
+        =class  "piece {(trip -.chess-piece)} on-{(get-color chess-square)} {?:(&(ownership is-its-turn) "act" "")} {?:(&(?=(^ selected-piece) =(chess-square -.selected-piece)) "sel" "")}"
         =style  "transform: translate({trans-x}, {trans-y});"
         =event  ?.(ownership "" "/click/select-piece/{(trip -.chess-square)}/{<(@ +.chess-square)>}/{(trip -.chess-piece)}/{(trip +.chess-piece)}")
-        ;+  ;/  (trip +.chess-piece)
+        ;img(src "/chess/img/white-{(trip +.chess-piece)}", alt (trip +.chess-piece));
       ==
   ==
 ::

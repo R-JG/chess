@@ -38,10 +38,13 @@
     ?:  =(%earl (clan:title our.bowl))
       (sein:title our.bowl now.bowl our.bowl)
     our.bowl
+  =/  spider-args
+    [~ [~ (scot %ta (cat 3 'chess-ui' (scot %uv (sham eny.bowl))))] byk.bowl(r da+now.bowl) %set-assets !>(~)]
   :_  this(+.state *ui-state)
   :~  [%pass /bind %arvo %e %connect `/chess %chess-ui]
       [%pass /challenges %agent [source %chess] %watch /challenges]
       [%pass /active-games %agent [source %chess] %watch /active-games]
+      [%pass /set-assets %agent [our.bowl %spider] %poke %spider-start !>([spider-args])]
   ==
 ++  on-save
   !>(~)
@@ -52,10 +55,13 @@
     ?:  =(%earl (clan:title our.bowl))
       (sein:title our.bowl now.bowl our.bowl)
     our.bowl
+  =/  spider-args
+    [~ [~ (scot %ta (cat 3 'chess-ui' (scot %uv (sham eny.bowl))))] byk.bowl(r da+now.bowl) %set-assets !>(~)]
   :_  this(+.state *ui-state)
   :~  [%pass /bind %arvo %e %connect `/chess %chess-ui]
       [%pass /challenges %agent [source %chess] %watch /challenges]
       [%pass /active-games %agent [source %chess] %watch /active-games]
+      [%pass /set-assets %agent [our.bowl %spider] %poke %spider-start !>([spider-args])]
   ==
 ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
 ++  on-poke
@@ -73,12 +79,14 @@
           =:  games                games.act
               challenges-sent      challenges-sent.act
               challenges-received  challenges-received.act
+              selected-game-pieces  
+                ^-  ui-board
+                ?~  selected-game-id
+                  ~
+                %-  %~  rep  by  board.position:(~(got by games) (game-id selected-game-id))
+                |=  [[k=chess-square v=chess-piece] acc=ui-board]
+                [[(weld <(@ -.k)> <(@ +.k)>) k v] acc]
             ==
-          =?  selected-game-pieces  !=(~ selected-game-id)
-            ^-  ui-board
-            %-  %~  rep  by  board.position:(~(got by games) (game-id selected-game-id))
-            |=  [[k=chess-square v=chess-piece] acc=ui-board]
-            [[(weld <(@ -.k)> <(@ +.k)>) k v] acc]
           =/  new-view=manx  (rig:mast routes url sail-sample)
           :_  this(view new-view)
           [(gust:mast /display-updates view new-view) ~]
@@ -220,6 +228,10 @@
         [%click %test-resign]
           =/  atom-id-input=@t  (~(got by data.client-poke) '/target/id')
           =/  id-val=game-id  (game-id (slav %ud atom-id-input))
+          =:  selected-game-id  ~
+              selected-piece  ~
+              available-moves  ~
+            ==
           :_  this
           :_  ~
           :*  %pass   /test-resign
@@ -343,8 +355,8 @@
           ?+  p.cage.sign  (on-agent:def wire sign)
             %chess-update
               =/  update  !<(chess-update q.cage.sign)
-              ~&  >  'GAME UPDATE'
-              ~&  >>  update
+              ::  ~&  >  'GAME UPDATE'
+              ::  ~&  >>  update
               ?+  -.update  (on-agent:def wire sign)
                 ::
                 %position
