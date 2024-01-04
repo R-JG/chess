@@ -38,13 +38,11 @@
     ?:  =(%earl (clan:title our.bowl))
       (sein:title our.bowl now.bowl our.bowl)
     our.bowl
-  =/  spider-args
-    [~ [~ (scot %ta (cat 3 'chess-ui' (scot %uv (sham eny.bowl))))] byk.bowl(r da+now.bowl) %set-assets !>(~)]
   :_  this(+.state *ui-state)
   :~  [%pass /bind %arvo %e %connect `/chess %chess-ui]
       [%pass /challenges %agent [source %chess] %watch /challenges]
       [%pass /active-games %agent [source %chess] %watch /active-games]
-      [%pass /set-assets %agent [our.bowl %spider] %poke %spider-start !>([spider-args])]
+      [%pass /get-state %agent [source %chess] %poke %chess-ui-agent !>([%get-state ~])]
   ==
 ++  on-save
   !>(~)
@@ -55,13 +53,11 @@
     ?:  =(%earl (clan:title our.bowl))
       (sein:title our.bowl now.bowl our.bowl)
     our.bowl
-  =/  spider-args
-    [~ [~ (scot %ta (cat 3 'chess-ui' (scot %uv (sham eny.bowl))))] byk.bowl(r da+now.bowl) %set-assets !>(~)]
   :_  this(+.state *ui-state)
   :~  [%pass /bind %arvo %e %connect `/chess %chess-ui]
       [%pass /challenges %agent [source %chess] %watch /challenges]
       [%pass /active-games %agent [source %chess] %watch /active-games]
-      [%pass /set-assets %agent [our.bowl %spider] %poke %spider-start !>([spider-args])]
+      [%pass /get-state %agent [source %chess] %poke %chess-ui-agent !>([%get-state ~])]
   ==
 ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
 ++  on-poke
@@ -74,22 +70,12 @@
       ?+  -.act  (on-poke:def mark vase)
         ::
         ::  receive state data from the main agent (instead of using remote scry)
-        ::  requested on http get
         %give-state
           =:  games                games.act
               challenges-sent      challenges-sent.act
               challenges-received  challenges-received.act
             ==
-          =.  selected-game-pieces
-            ^-  ui-board
-            ?~  selected-game-id
-              ~
-            %-  %~  rep  by  board.position:(~(got by games) (game-id selected-game-id))
-            |=  [[k=chess-square v=chess-piece] acc=ui-board]
-            [[(weld <(@ -.k)> <(@ +.k)>) k v] acc]
-          =/  new-view=manx  (rig:mast routes url sail-sample)
-          :_  this(view new-view)
-          [(gust:mast /display-updates view new-view) ~]
+          [~ this]
       ==
     ::
     %handle-http-request
@@ -103,7 +89,6 @@
             [(make-css-response:mast eyre-id style) this]
           =/  new-view=manx  (rig:mast routes req-url sail-sample)
           :_  this(view new-view, url req-url)
-          :-  [%pass /get-state %agent [source %chess] %poke %chess-ui-agent !>([%get-state ~])]
           (plank:mast "chess-ui" /display-updates our.bowl eyre-id new-view)
       ==
     ::
@@ -255,7 +240,20 @@
   ==
 ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
 ++  on-leave  on-leave:def
-++  on-peek   on-peek:def
+::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
+++  on-peek
+  |=  =path
+  ^-  (unit (unit cage))
+  ?>  =(our.bowl src.bowl)
+  ?+  path  (on-peek:def path)
+    [%x %img @ta ~]
+      =/  piece  (chess-piece-type -.+.+.path)
+      :*  ~  ~  %svg
+      !>  .^  @
+      :~  %cx  (scot %p p.byk.bowl)  q.byk.bowl  (scot %da p.r.byk.bowl) 
+          %app  %chess-ui  %img  piece  %svg
+      ==  ==  ==
+  ==
 ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
 ++  on-agent
   |=  [=wire =sign:agent:gall]
@@ -405,6 +403,17 @@
                           i.selected-game-pieces
                         [key.i.selected-game-pieces to chess-piece.i.selected-game-pieces]
                     $(selected-game-pieces t.selected-game-pieces)
+                  =/  new-view=manx  (rig:mast routes url sail-sample)
+                  :_  this(view new-view)
+                  [(gust:mast /display-updates view new-view) ~]
+                ::
+                %result
+                  =:  games  (~(del by games) game-id.update)
+                      selected-game-id  ~
+                      selected-game-pieces  ~
+                      selected-piece  ~
+                      available-moves  ~
+                    ==
                   =/  new-view=manx  (rig:mast routes url sail-sample)
                   :_  this(view new-view)
                   [(gust:mast /display-updates view new-view) ~]

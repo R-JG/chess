@@ -9,12 +9,12 @@
   ;head
     ;meta(charset "utf-8");
     ;link(href "/chess/style", rel "stylesheet");
-    ;link(href "/chess/img/white-pawn", rel "preload", as "image");
-    ;link(href "/chess/img/white-knight", rel "preload", as "image");
-    ;link(href "/chess/img/white-bishop", rel "preload", as "image");
-    ;link(href "/chess/img/white-rook", rel "preload", as "image");
-    ;link(href "/chess/img/white-queen", rel "preload", as "image");
-    ;link(href "/chess/img/white-king", rel "preload", as "image");
+    ;link(href "/~/scry/chess-ui/img/pawn.svg", rel "preload", as "image");
+    ;link(href "/~/scry/chess-ui/img/knight.svg", rel "preload", as "image");
+    ;link(href "/~/scry/chess-ui/img/bishop.svg", rel "preload", as "image");
+    ;link(href "/~/scry/chess-ui/img/rook.svg", rel "preload", as "image");
+    ;link(href "/~/scry/chess-ui/img/queen.svg", rel "preload", as "image");
+    ;link(href "/~/scry/chess-ui/img/king.svg", rel "preload", as "image");
   ==
   ;body
     ;+  game-panel
@@ -130,7 +130,9 @@
   ^-  manx
   ?~  selected-game-id
     ;div(class "game-panel");
-  ;div(class "game-panel");
+  ;div(class "game-panel")
+    ;button(id <(@ selected-game-id)>, event "/click/test-resign", return "/target/id"): TEST RESIGN
+  ==
 ::
 ++  chessboard
   ^-  manx
@@ -169,7 +171,7 @@
         =class  "piece {(trip -.chess-piece)} on-{(get-color chess-square)} {?:(&(ownership is-its-turn) "act" "")} {?:(&(?=(^ selected-piece) =(chess-square -.selected-piece)) "sel" "")}"
         =style  "transform: translate({trans-x}, {trans-y});"
         =event  ?.(ownership "" "/click/select-piece/{(trip -.chess-square)}/{<(@ +.chess-square)>}/{(trip -.chess-piece)}/{(trip +.chess-piece)}")
-        ;img(src "/chess/img/white-{(trip +.chess-piece)}");
+        ;img(src "/~/scry/chess-ui/img/{(trip +.chess-piece)}.svg");
       ==
   ==
 ::
