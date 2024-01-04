@@ -1,7 +1,6 @@
 /-  *chess
 /+  chess, default-agent, mast
 /=  index  /app/chess-ui/index
-/=  style  /app/chess-ui/style
 |%
 +$  source  @p
 +$  view  $~([[%html ~] [[%head ~] ~] [[%body ~] ~] ~] manx)
@@ -9,7 +8,7 @@
 +$  ui-state
   $:  =view  =url
       =games  =challenges-sent  =challenges-received
-      =menu-mode  =selected-game-id  =selected-game-pieces
+      =menu-mode  =notification  =selected-game-id  =selected-game-pieces
       =selected-piece  =available-moves
   ==
 +$  card  card:agent:gall
@@ -28,7 +27,7 @@
       ==
     sail-sample
       :*  bowl  games  challenges-sent  challenges-received
-          menu-mode  selected-game-id  selected-game-pieces
+          menu-mode  notification  selected-game-id  selected-game-pieces
           selected-piece  available-moves
       ==
 ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
@@ -85,8 +84,6 @@
       ?+    method.request.req  [(make-400:mast eyre-id) this]
         %'GET'
           =/  req-url=path  (parse-url:mast url.request.req)
-          ?:  =(/chess/style req-url)
-            [(make-css-response:mast eyre-id style) this]
           =/  new-view=manx  (rig:mast routes req-url sail-sample)
           :_  this(view new-view, url req-url)
           (plank:mast "chess-ui" /display-updates our.bowl eyre-id new-view)
@@ -137,6 +134,7 @@
             :-  (chess-square [i.t.t.tags.client-poke (slav %ud i.t.t.t.tags.client-poke)])
             (chess-piece [i.t.t.t.t.tags.client-poke i.t.t.t.t.t.tags.client-poke])
           =:  selected-piece  ?:(=(selected-piece selection) ~ selection)
+              notification  ~
               available-moves
                 %-  silt
                 %~  moves-and-threatens
@@ -246,6 +244,12 @@
   ^-  (unit (unit cage))
   ?>  =(our.bowl src.bowl)
   ?+  path  (on-peek:def path)
+    [%x %style ~]
+      :*  ~  ~  %css
+      !>  .^  @
+      :~  %cx  (scot %p p.byk.bowl)  q.byk.bowl  (scot %da p.r.byk.bowl) 
+          %app  %chess-ui  %style  %css
+      ==  ==  ==
     [%x %img @ta ~]
       =/  piece  (chess-piece-type -.+.+.path)
       :*  ~  ~  %svg
@@ -262,6 +266,21 @@
   ::  ~&  >>  wire
   ::  ~&  >  sign
   ?+  wire  (on-agent:def wire sign)
+    ::
+    [%move-piece ~]
+      ?+  -.sign  (on-agent:def wire sign)
+        %poke-ack
+          ?.  ?&  ?=(^ p.sign)  ?=(^ u.p.sign)  =(%leaf -.i.u.p.sign)
+                  ?=(^ (find "invalid" +.i.u.p.sign))
+              ==
+            (on-agent:def wire sign)
+          =:  notification  "Invalid move"
+              selected-piece  ~
+            ==
+          =/  new-view=manx  (rig:mast routes url sail-sample)
+          :_  this(view new-view)
+          [(gust:mast /display-updates view new-view) ~]
+      ==
     ::
     [%challenges ~]
       ?+  -.sign  (on-agent:def wire sign)

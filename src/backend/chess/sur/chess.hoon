@@ -368,6 +368,7 @@
 ::  ui agent state
 +$  ui-board  (list [key=tape =chess-square =chess-piece])
 +$  menu-mode  ?(%settings %games %challenges)
++$  notification  tape
 +$  selected-game-id  ?(game-id ~)
 +$  selected-game-pieces  ui-board
 +$  selected-piece  ?([=chess-square =chess-piece] ~)

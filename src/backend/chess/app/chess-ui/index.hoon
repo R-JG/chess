@@ -1,6 +1,6 @@
 /-  *chess
 |=  $:  =bowl:gall  =games  =challenges-sent  =challenges-received
-        =menu-mode  =selected-game-id  =selected-game-pieces
+        =menu-mode  =notification  =selected-game-id  =selected-game-pieces
         =selected-piece  =available-moves
     ==
 |^  ^-  manx
@@ -8,7 +8,7 @@
 ;html
   ;head
     ;meta(charset "utf-8");
-    ;link(href "/chess/style", rel "stylesheet");
+    ;link(href "/~/scry/chess-ui/style.css", rel "stylesheet");
     ;link(href "/~/scry/chess-ui/img/pawn.svg", rel "preload", as "image");
     ;link(href "/~/scry/chess-ui/img/knight.svg", rel "preload", as "image");
     ;link(href "/~/scry/chess-ui/img/bishop.svg", rel "preload", as "image");
@@ -131,6 +131,10 @@
   ?~  selected-game-id
     ;div(class "game-panel");
   ;div(class "game-panel")
+    ;+  ?~  notification  ;div;
+      ;div
+        ;+  ;/  notification
+      ==
     ;button(id <(@ selected-game-id)>, event "/click/test-resign", return "/target/id"): TEST RESIGN
   ==
 ::
