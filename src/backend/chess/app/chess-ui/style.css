@@ -1,8 +1,9 @@
 body {
+  font-family: 'Courier Prime', 'Courier New', monospace;
   box-sizing: border-box;
   height: 100vh;
+  padding: 7rem;
   margin: 0;
-  padding: 3rem;
   background-color: #A9CEF4;
   display: flex;
   flex-direction: row;
@@ -13,9 +14,16 @@ label {
   margin-top: 0.5rem;
   margin-left: 0.5rem;
 }
-.menu {
-  height: 30rem;
+.menus {
   width: 20rem;
+  height: 30rem;
+  display: flex;
+  flex-direction: column;
+}
+.menu {
+  flex-grow: 1;
+  box-sizing: border-box;
+  width: 100%;
   border: 2px solid black;
   background-color: #F8F7F9;
   box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.5);
@@ -33,10 +41,13 @@ label {
   align-items: center;
 }
 .tab {
+  box-sizing: border-box;
+  width: 45%;
   padding: 1rem;
   box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 6px;
   cursor: pointer;
   transition: transform .1s ease;
+  text-align: center;
 }
 .tab:hover {
   transform: scale(1.05);
@@ -56,7 +67,7 @@ label {
   display: flex;
   flex-direction: column;
 }
-.challenges-menu, .games-menu, .settings-menu {
+.challenges-menu, .games-menu {
   padding-inline: 2rem;
   padding-bottom: 2rem;
   overflow: auto;
@@ -69,6 +80,38 @@ label {
   cursor: pointer;
 }
 .game-selector.selected {
+  background-color: firebrick;
+}
+.game-panel {
+  flex-shrink: 1;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 2px solid black;
+  background-color: #F8F7F9;
+  box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  transition: height 0.5s ease;
+}
+.game-panel.inactive {
+  height: 0;
+  padding: 0;
+  margin: 0;
+  opacity: 0;
+}
+.turn-info {
+  width: 100%;
+  margin-block: 1rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+}
+.notification {
   background-color: firebrick;
 }
 .chessboard {

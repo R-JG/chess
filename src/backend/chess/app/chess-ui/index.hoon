@@ -1,4 +1,4 @@
-/-  *chess
+/-  *chess-ui
 |=  $:  =bowl:gall  =games  =challenges-sent  =challenges-received
         =menu-mode  =notification  =selected-game-id  =selected-game-pieces
         =selected-piece  =available-moves
@@ -17,9 +17,11 @@
     ;link(href "/~/scry/chess-ui/img/king.svg", rel "preload", as "image");
   ==
   ;body
-    ;+  game-panel
     ;+  chessboard
-    ;+  menu
+    ;div(class "menus")
+      ;+  game-panel
+      ;+  menu
+    ==
   ==
 ==
 ::
@@ -37,16 +39,10 @@
         =event  "/click/set-menu-mode/games"
         ;+  ;/  "Games"
       ==
-      ;div
-        =class  "tab settings"
-        =event  "/click/set-menu-mode/settings"
-        ;+  ;/  "Settings"
-      ==
     ==
     ;+  ?-  menu-mode
           %challenges  challenges-menu
           %games       games-menu
-          %settings    settings-menu
         ==
   ==
 ::
@@ -122,17 +118,20 @@
       ==
   ==
 ::
-++  settings-menu
-  ^-  manx
-  ;div(class "settings-menu");
-::
 ++  game-panel
   ^-  manx
-  ?~  selected-game-id
-    ;div(class "game-panel");
+  ?~  selected-game-id  ;div(class "game-panel inactive");
+  =/  current-game  (~(got by games) selected-game-id)
+  =/  num-moves=@ud  (lent moves.game.current-game)
+  =/  side-turn=tape  ?:((bean (mod num-moves 2)) "White" "Black")
   ;div(class "game-panel")
+    ;+  ;/  "Opponent: {<opponent.current-game>}"
+    ;div(class "turn-info")
+      ;+  ;/  "Turn: {<+(num-moves)>}"
+      ;+  ;/  side-turn
+    ==
     ;+  ?~  notification  ;div;
-      ;div
+      ;div(class "notification")
         ;+  ;/  notification
       ==
     ;button(id <(@ selected-game-id)>, event "/click/test-resign", return "/target/id"): TEST RESIGN

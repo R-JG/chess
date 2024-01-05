@@ -1062,11 +1062,11 @@
         ==  ==
       ==
     ::
-    ::  provisional mark for requesting state data instead of remote scrying
+    ::  provisional mark for chess-ui to request state data instead of remote scrying
     %chess-ui-agent
       ?>  |(=(our.bowl src.bowl) (moon:title our.bowl src.bowl))
-      =/  action  !<(chess-ui-agent vase)
-      ?+  -.action  (on-poke:default mark vase)
+      =/  action  !<([%get-state ~] vase)
+      ?-  -.action
         %get-state
           :_  this
           :_  ~

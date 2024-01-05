@@ -1,4 +1,4 @@
-/-  *chess
+/-  *chess-ui
 /+  chess, default-agent, mast
 /=  index  /app/chess-ui/index
 |%
