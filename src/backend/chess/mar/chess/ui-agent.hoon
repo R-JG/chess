@@ -1,8 +1,8 @@
-/-  chess
-|_  act=chess-ui-agent:chess
+/-  chess-ui
+|_  act=chess-ui-agent:chess-ui
 ++  grab
   |%
-  ++  noun  chess-ui-agent:chess
+  ++  noun  chess-ui-agent:chess-ui
   --
 ++  grow
   |%

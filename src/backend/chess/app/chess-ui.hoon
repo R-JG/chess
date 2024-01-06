@@ -8,7 +8,8 @@
 +$  ui-state
   $:  =view  =url
       =games  =challenges-sent  =challenges-received
-      =menu-mode  =notification  =selected-game-id  =selected-game-pieces
+      =menu-mode  =notification  =expand-game-options  =expand-challenge-form
+      =selected-game-id  =selected-game-pieces
       =selected-piece  =available-moves
   ==
 +$  card  card:agent:gall
@@ -27,7 +28,8 @@
       ==
     sail-sample
       :*  bowl  games  challenges-sent  challenges-received
-          menu-mode  notification  selected-game-id  selected-game-pieces
+          menu-mode  notification  expand-game-options  expand-challenge-form
+          selected-game-id  selected-game-pieces
           selected-piece  available-moves
       ==
 ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
@@ -101,7 +103,21 @@
           =/  menu-val=@ta  
             ?~  t.t.tags.client-poke  ~&('set-menu-mode path missing' !!)
             i.t.t.tags.client-poke
-          =.  menu-mode  (^menu-mode menu-val)
+          =:  menu-mode  (^menu-mode menu-val)
+              expand-challenge-form  |
+            ==
+          =/  new-view=manx  (rig:mast routes url sail-sample)
+          :_  this(view new-view)
+          [(gust:mast /display-updates view new-view) ~]
+        ::
+        [%click %toggle-challenge-form]
+          =.  expand-challenge-form  !expand-challenge-form
+          =/  new-view=manx  (rig:mast routes url sail-sample)
+          :_  this(view new-view)
+          [(gust:mast /display-updates view new-view) ~]
+        ::
+        [%click %toggle-game-options]
+          =.  expand-game-options  !expand-game-options
           =/  new-view=manx  (rig:mast routes url sail-sample)
           :_  this(view new-view)
           [(gust:mast /display-updates view new-view) ~]
@@ -119,6 +135,7 @@
                 %-  %~  rep  by  board.position:(~(got by games) id-val)
                 |=  [[k=chess-square v=chess-piece] acc=ui-board]
                 [[(weld <(@ -.k)> <(@ +.k)>) k v] acc]
+              expand-game-options  |
             ==
           =/  new-view=manx  (rig:mast routes url sail-sample)
           :_  this(view new-view)
@@ -208,20 +225,58 @@
               !>([%decline-challenge challenger])
           ==
         ::
-        [%click %test-resign]
-          =/  atom-id-input=@t  (~(got by data.client-poke) '/target/id')
-          =/  id-val=game-id  (game-id (slav %ud atom-id-input))
-          =:  selected-game-id  ~
-              selected-piece  ~
-              available-moves  ~
-            ==
-          :_  this
+        [%click %resign]
+          ?~  selected-game-id
+            ~&('selected-game-id missing from resign' !!)
+          :_  %=  this
+                selected-game-id  ~
+                selected-piece    ~
+                available-moves   ~
+                expand-game-options  |
+              ==
           :_  ~
-          :*  %pass   /test-resign
+          :*  %pass   /resign
               %agent  [source %chess]
               %poke   %chess-user-action
-              !>([%resign id-val])
+              !>([%resign selected-game-id])
           ==
+        ::
+        ::  [%click %offer-draw]
+        ::    ?~  selected-game-id
+        ::      ~&('selected-game-id missing from offer-draw' !!)
+        ::    :_  this
+        ::    :_  ~
+        ::    :*  %pass   /offer-draw
+        ::        %agent  [source %chess]
+        ::        %poke   %chess-user-action
+        ::        !>([%offer-draw selected-game-id])
+        ::    ==
+        ::  ::
+        ::  [%click %accept-draw]
+        ::    ?~  selected-game-id
+        ::      ~&('selected-game-id missing from accept-draw' !!)
+        ::    :_  this
+        ::    :_  ~
+        ::    :*  %pass   /accept-draw
+        ::        %agent  [source %chess]
+        ::        %poke   %chess-user-action
+        ::        !>([%accept-draw selected-game-id])
+        ::    ==
+        ::  ::
+        ::  [%click %decline-draw]
+        ::    ?~  selected-game-id
+        ::      ~&('selected-game-id missing from decline-draw' !!)
+        ::    =/  current-game  (~(got by games) selected-game-id)
+        ::    =.  got-draw-offer.current-game  |
+        ::    =.  games  (~(put by games) selected-game-id current-game)
+        ::    =/  new-view=manx  (rig:mast routes url sail-sample)
+        ::    :_  this(view new-view)
+        ::    :~  (gust:mast /display-updates view new-view)
+        ::        :*  %pass   /decline-draw
+        ::            %agent  [source %chess]
+        ::            %poke   %chess-user-action
+        ::            !>([%decline-draw selected-game-id])
+        ::    ==  ==
         ::
       ==
   ==
@@ -297,8 +352,10 @@
               ?+  -.update  (on-agent:def wire sign)
                 ::
                 %challenge-sent
-                  =.  challenges-sent
-                    (~(put by challenges-sent) who.update challenge.update)
+                  =:  expand-challenge-form  |
+                      challenges-sent
+                        (~(put by challenges-sent) who.update challenge.update)
+                    ==
                   =/  new-view=manx  (rig:mast routes url sail-sample)
                   :_  this(view new-view)
                   [(gust:mast /display-updates view new-view) ~]
@@ -425,6 +482,15 @@
                   =/  new-view=manx  (rig:mast routes url sail-sample)
                   :_  this(view new-view)
                   [(gust:mast /display-updates view new-view) ~]
+                ::
+                ::  %draw-offered
+                ::    =/  game-to-update  (~(get by games) game-id.update)
+                ::    ?~  game-to-update  ~&('game not found for chess-update draw-offered' !!)
+                ::    =.  games
+                ::      (~(put by games) game-id.update u.game-to-update(got-draw-offer &))
+                ::    =/  new-view=manx  (rig:mast routes url sail-sample)
+                ::    :_  this(view new-view)
+                ::    [(gust:mast /display-updates view new-view) ~]
                 ::
                 %result
                   =:  games  (~(del by games) game-id.update)

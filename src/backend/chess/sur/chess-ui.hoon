@@ -23,6 +23,8 @@
 +$  ui-board  (list [key=tape =chess-square =chess-piece])
 +$  menu-mode  ?(%games %challenges)
 +$  notification  tape
++$  expand-game-options  $~(| bean)
++$  expand-challenge-form  $~(| bean)
 +$  selected-game-id  ?(game-id ~)
 +$  selected-game-pieces  ui-board
 +$  selected-piece  ?([=chess-square =chess-piece] ~)

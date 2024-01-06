@@ -14,6 +14,21 @@ label {
   margin-top: 0.5rem;
   margin-left: 0.5rem;
 }
+button {
+  background-color: lightgray;
+  cursor: pointer;
+}
+button:hover {
+  filter: brightness(0.9);
+}
+button, input {
+  font-family: 'Courier Prime', 'Courier New', monospace;
+}
+.close-button {
+  padding-inline: 0.3rem;
+  margin: 0;
+  border-radius: 1rem;
+}
 .menus {
   width: 20rem;
   height: 30rem;
@@ -21,8 +36,8 @@ label {
   flex-direction: column;
 }
 .menu {
-  flex-grow: 1;
   box-sizing: border-box;
+  height: 30rem;
   width: 100%;
   border: 2px solid black;
   background-color: #F8F7F9;
@@ -31,6 +46,7 @@ label {
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
+  overflow: auto;
 }
 .menu-tabs {
   width: 100%;
@@ -61,30 +77,59 @@ label {
 .tab.settings {
   background-color: cornflowerblue;
 }
+.open-form-button {
+  margin-top: 1.5rem;
+  margin-bottom: 0.8rem;
+  cursor: pointer;
+}
 .challenge-form {
   background-color: lightgray;
   padding: 1rem;
+  margin-bottom: 2.5rem;
   display: flex;
   flex-direction: column;
 }
+.challenge-form input, select {
+  max-width: 10rem;
+  margin-left: 0.5rem;
+}
+.challenge-form button {
+  margin-top: 0.6rem;
+}
 .challenges-menu, .games-menu {
+  box-sizing: border-box;
+  height: 100%;
+  width: 100%;
   padding-inline: 2rem;
   padding-bottom: 2rem;
   overflow: auto;
 }
-.received-challenges {
+.games-menu {
+  padding-top: 0.5rem;
+}
+.challenge {
   background-color: lightgray;
-  padding: 1rem;
+  padding: 0.7rem;
+  margin-block: 0.5rem;
+}
+.challenge p {
+  margin-block: 0.3rem;
+}
+.challenge button {
+  margin-right: 0.3rem;
 }
 .game-selector {
   cursor: pointer;
+  padding: 0.6rem;
+  margin-top: 1rem;
 }
 .game-selector.selected {
-  background-color: firebrick;
+  background-color: lightgray;
+  cursor: auto;
 }
 .game-panel {
-  flex-shrink: 1;
   box-sizing: border-box;
+  height: 8rem;
   width: 100%;
   padding: 1rem;
   margin-bottom: 1rem;
@@ -95,7 +140,7 @@ label {
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  transition: height 0.5s ease;
+  transition: height 0.2s ease;
 }
 .game-panel.inactive {
   height: 0;
@@ -112,7 +157,26 @@ label {
   align-items: center;
 }
 .notification {
-  background-color: firebrick;
+  background-color: crimson;
+  padding-inline: 0.5rem;
+  padding-block: 0.1rem;
+}
+.options-tab {
+  font-size: 0.9rem;
+  padding: 0.4rem;
+  margin: 0;
+  border: none;
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 6px;
+  background-color: #9dccfa;
+  cursor: pointer;
+  transition: transform .1s ease;
+}
+.options-button:hover {
+  transform: scale(1.05);
+}
+.options-container button {
+  margin-inline: 0.3rem;
+  cursor: pointer;
 }
 .chessboard {
   height: 30rem;

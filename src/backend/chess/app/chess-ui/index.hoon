@@ -1,6 +1,7 @@
 /-  *chess-ui
 |=  $:  =bowl:gall  =games  =challenges-sent  =challenges-received
-        =menu-mode  =notification  =selected-game-id  =selected-game-pieces
+        =menu-mode  =notification  =expand-game-options  =expand-challenge-form
+        =selected-game-id  =selected-game-pieces
         =selected-piece  =available-moves
     ==
 |^  ^-  manx
@@ -49,46 +50,32 @@
 ++  challenges-menu
   ^-  manx
   ;div(class "challenges-menu")
-    ;p: Send a challenge:
-    ;div(class "challenge-form")
-      ;label
-        ;+  ;/  "Ship"
-        ;input(id "challenge-ship-input");
-      ==
-      ;label
-        ;+  ;/  "Note"
-        ;input(id "challenge-note-input");
-      ==
-      ;label
-        ;+  ;/  "Side"
-        ;select(id "challenge-side-input")
-          ;option(value "white"): White
-          ;option(value "black"): Black
-          ;option(value "random"): Random
+    ;+  ?:  expand-challenge-form
+      ;p: Send a Challenge:
+    ;button
+      =class  "open-form-button"
+      =event  "/click/toggle-challenge-form"
+      ;+  ;/  "Send a Challenge"
+    ==
+    ;+  ?:(expand-challenge-form challenge-form ;div;)
+    ;+  ?:  =(~ challenges-sent)  ;div;
+      ;div
+        ;p: Sent Challenges:
+        ;div(class "challenges-list")
+          ;*  %+  turn  ~(tap by challenges-sent)
+            |=  [=ship =chess-challenge]
+            ;div(class "challenge")
+              ;p: {"To: {<ship>}"}
+              ;p: {"Your side: {(trip challenger-side.chess-challenge)}"}
+            ==
         ==
       ==
-      ;label
-        ;+  ;/  "Practice"
-        ;input(type "checkbox", id "challenge-practice-input");
-      ==
-      ;button
-        =event  "/click/send-challenge"
-        =return  
-          """
-          /challenge-ship-input/value 
-          /challenge-note-input/value 
-          /challenge-side-input/value 
-          /challenge-practice-input/checked
-          """
-        ;+  ;/  "Send challenge"
-      ==
-    ==
     ;p: Received Challenges:
-    ;+  ?:  =(0 ~(wyt by challenges-received))
-        ;div(class "received-challenges")
+    ;+  ?:  =(~ challenges-received)
+        ;div(class "challenge")
           ;+  ;/  "You have not received any challenges."
         ==
-      ;div(class "received-challenges")
+      ;div(class "challenges-list")
         ;*  %+  turn  ~(tap by challenges-received)
           |=  [=ship =chess-challenge]
           ;div(class "challenge")
@@ -106,15 +93,55 @@
       ==
   ==
 ::
+++  challenge-form
+  ^-  manx
+  ;div(class "challenge-form")
+    ;label
+      ;+  ;/  "Ship"
+      ;input(id "challenge-ship-input");
+    ==
+    ;label
+      ;+  ;/  "Note"
+      ;input(id "challenge-note-input");
+    ==
+    ;label
+      ;+  ;/  "Side"
+      ;select(id "challenge-side-input")
+        ;option(value "white"): White
+        ;option(value "black"): Black
+        ;option(value "random"): Random
+      ==
+    ==
+    ;label
+      ;+  ;/  "Practice"
+      ;input(type "checkbox", id "challenge-practice-input");
+    ==
+    ;button
+      =event  "/click/send-challenge"
+      =return  
+        """
+        /challenge-ship-input/value 
+        /challenge-note-input/value 
+        /challenge-side-input/value 
+        /challenge-practice-input/checked
+        """
+      ;+  ;/  "Send challenge"
+    ==
+  ==
+::
 ++  games-menu
   ^-  manx
+  ?:  =(~ games)
+    ;div(class "games-menu")
+      ;div(class "game-selector selected"): You currently have no games.
+    ==
   ;div(class "games-menu")
     ;*  %+  turn  `(list [game-id active-game-state])`~(tap by games)
       |=  [=game-id =active-game-state]
       ;div
         =class  "game-selector {?:(=(selected-game-id game-id) "selected" "")}"
         =event  "/click/select-game/{<(@ game-id)>}"
-        ;p: {"Opponent: {<opponent.active-game-state>}"}
+        ;+  ;/  "Opponent: {<opponent.active-game-state>}"
       ==
   ==
 ::
@@ -128,13 +155,18 @@
     ;+  ;/  "Opponent: {<opponent.current-game>}"
     ;div(class "turn-info")
       ;+  ;/  "Turn: {<+(num-moves)>}"
+      ;+  ?~  notification  ;div;
+        ;div(class "notification")
+          ;+  ;/  notification
+        ==
       ;+  ;/  side-turn
     ==
-    ;+  ?~  notification  ;div;
-      ;div(class "notification")
-        ;+  ;/  notification
-      ==
-    ;button(id <(@ selected-game-id)>, event "/click/test-resign", return "/target/id"): TEST RESIGN
+    ;+  ?.  expand-game-options
+      ;div(class "options-tab", event "/click/toggle-game-options"): Options
+    ;div(class "options-container")
+      ;button(event "/click/resign"): Resign
+      ;button(class "close-button", event "/click/toggle-game-options"): ✖
+    ==
   ==
 ::
 ++  chessboard
