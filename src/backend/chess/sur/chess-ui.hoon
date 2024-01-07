@@ -20,6 +20,7 @@
 +$  challenges-received  (map ship chess-challenge)
 ::
 ::  ui agent state
++$  source  @p
 +$  ui-board  (list [key=tape =chess-square =chess-piece])
 +$  menu-mode  ?(%games %challenges)
 +$  notification  tape

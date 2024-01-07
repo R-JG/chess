@@ -1,5 +1,5 @@
 /-  *chess-ui
-|=  $:  =bowl:gall  =games  =challenges-sent  =challenges-received
+|=  $:  =source  =bowl:gall  =games  =challenges-sent  =challenges-received
         =menu-mode  =notification  =expand-game-options  =expand-challenge-form
         =selected-game-id  =selected-game-pieces
         =selected-piece  =available-moves
@@ -194,8 +194,8 @@
         "-{<(sub (@ +.chess-square) 1)>}00%"
       =/  ownership=bean
         ?-  -.chess-piece
-          %white  =(our.bowl white.game.u.game-to-render)
-          %black  =(our.bowl black.game.u.game-to-render)
+          %white  =(source white.game.u.game-to-render)
+          %black  =(source black.game.u.game-to-render)
         ==
       =/  is-its-turn=bean
         ?:  (bean (mod (lent moves.game.u.game-to-render) 2))

@@ -67,7 +67,7 @@
     ::  pokes managing active game state and challenges, possibly sent by the user
     %chess-user-action
       ::  only allow chess actions from our ship or our moons
-      ?>  =(our.bowl src.bowl)
+      ?>  |(=(our.bowl src.bowl) (moon:title our.bowl src.bowl))
       =/  action  !<(chess-user-action vase)
       ?-  -.action
         ::  manage new outgoing challenges
@@ -461,7 +461,7 @@
           =/  ship-to-move
             (ship-to-move u.game-state)
           ::  check whether it's our turn
-          ?.  =(ship-to-move src.bowl)
+          ?.  =(ship-to-move our.bowl)
             %+  poke-nack  this
             "not our move"
           ::  check if the move is legal
@@ -1065,7 +1065,7 @@
     ::  provisional mark for chess-ui to request state data instead of remote scrying
     %chess-ui-agent
       ?>  |(=(our.bowl src.bowl) (moon:title our.bowl src.bowl))
-      =/  action  !<([%get-state ~] vase)
+      =/  action  !<($%([%get-state ~] [%give-state games=(map game-id active-game-state) challenges-sent=(map ship chess-challenge) challenges-received=(map ship chess-challenge)]) vase)
       ?-  -.action
         %get-state
           :_  this
@@ -1075,6 +1075,8 @@
               %poke   %chess-ui-agent
               !>([%give-state games challenges-sent challenges-received])
           ==
+        %give-state
+          `this
       ==
   ==
 ++  on-watch
@@ -1084,7 +1086,7 @@
     ::
     ::  get all challenge updates
     [%challenges ~]
-      ?>  =(our.bowl src.bowl)
+      ?>  |(=(our.bowl src.bowl) (moon:title our.bowl src.bowl))
       :_  this
       %-  zing
       %-  limo
@@ -1112,7 +1114,7 @@
     ::
     ::  convert active games to chess-game-active marks for subscribers
     [%active-games ~]
-      ?>  =(our.bowl src.bowl)
+      ?>  |(=(our.bowl src.bowl) (moon:title our.bowl src.bowl))
       :_  this
       %+  turn  ~(tap by games)
       |=  [key=game-id game=chess-game * *]
@@ -1126,7 +1128,7 @@
     ::
     ::  convert archived games to chess-game-archived marks for frontend
     [%archived-games ~]
-      ?>  (team:title our.bowl src.bowl)
+      ?>  |(=(our.bowl src.bowl) (moon:title our.bowl src.bowl))
       :_  this
       %+  turn  (tap:arch-orm archive)
       |=  [key=game-id game=chess-game]

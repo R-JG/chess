@@ -2,7 +2,6 @@
 /+  chess, default-agent, mast
 /=  index  /app/chess-ui/index
 |%
-+$  source  @p
 +$  view  $~([[%html ~] [[%head ~] ~] [[%body ~] ~] ~] manx)
 +$  url  path
 +$  ui-state
@@ -27,7 +26,7 @@
       :~  [/chess index]
       ==
     sail-sample
-      :*  bowl  games  challenges-sent  challenges-received
+      :*  source  bowl  games  challenges-sent  challenges-received
           menu-mode  notification  expand-game-options  expand-challenge-form
           selected-game-id  selected-game-pieces
           selected-piece  available-moves
@@ -135,6 +134,9 @@
                 %-  %~  rep  by  board.position:(~(got by games) id-val)
                 |=  [[k=chess-square v=chess-piece] acc=ui-board]
                 [[(weld <(@ -.k)> <(@ +.k)>) k v] acc]
+              notification         ~
+              selected-piece       ~
+              available-moves      ~
               expand-game-options  |
             ==
           =/  new-view=manx  (rig:mast routes url sail-sample)
@@ -312,6 +314,12 @@
       :~  %cx  (scot %p p.byk.bowl)  q.byk.bowl  (scot %da p.r.byk.bowl) 
           %app  %chess-ui  %img  piece  %svg
       ==  ==  ==
+    [%x %background ~]
+      :*  ~  ~  %png
+      !>  .^  @
+      :~  %cx  (scot %p p.byk.bowl)  q.byk.bowl  (scot %da p.r.byk.bowl) 
+          %app  %chess-ui  %img  %background  %png
+      ==  ==  ==
   ==
 ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
 ++  on-agent
@@ -450,7 +458,7 @@
                   ?~  piece  
                     ::  because %position is hit twice if we are facing ourselves:
                     ::  ignore the second (where the piece has already been moved).
-                    ?:  =(our.bowl opponent.u.game)
+                    ?:  =(source opponent.u.game)
                       `this
                     ~&('game-updates: ui data missing' !!)
                   =/  en-passant-capture=?(chess-square ~)
