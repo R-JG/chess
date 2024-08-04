@@ -125,6 +125,8 @@
   ?~  t.c.old  !!
   ?~  t.c.new  !!
   ?~  a.g.new  !!
+  ~&  >  (en:json:html [%a (json-algo c.i.t.c.old c.i.t.c.new)])
+  ~&  >>  (crip (en-xml:html `manx`[[%g ~] (algo c.i.t.c.old c.i.t.c.new)]))
   :^  %give  %fact  ~[sub]
   :-  %json
   !>  %-  tape:enjs:format
@@ -181,15 +183,15 @@
   ==
 :: :: :: ::
 ::
-:: Algorithms
+:: MARL ALGO
 ::
 :: :: :: ::
 ++  algo
   |=  [old=marl new=marl]
-  ^-  marl
-  =/  i=@ud  0
-  =/  acc=marl  ~
-  |-
+  =|  i=@ud
+  =|  pkey=tape
+  =|  acc=marl
+  |-  ^-  marl
   ?~  new
     ?.  =(~ old)
       ?:  =(%skip -.-.-.old)
@@ -202,7 +204,7 @@
       ?~  old
         ~
       :-  :-  (crip (weld "d" <c>)) 
-        (getv a.g.i.old %key)
+        (old-getv %key a.g.i.old)
       $(old t.old, c +(c))
     acc
   ?:  &(?=(^ old) =(%skip -.-.-.old))
@@ -211,8 +213,8 @@
     $(new t.new, i +(i), acc (snoc acc i.new))
   =/  j=@ud  0
   =/  jold=marl  old
-  =/  nkey=[n=mane k=tape]  [n.g.i.new (getv a.g.i.new %key)]
-  |-
+  =/  nkey=[n=mane k=tape]  [n.g.i.new (old-getv %key a.g.i.new)]
+  |-  ^-  marl
   ?~  new
     !!
   ?~  jold
@@ -220,7 +222,7 @@
       new  t.new
       i    +(i)
       acc  %+  snoc  acc
-        ;n(id <i>)
+        ;n(id <i>, pkey pkey) :: temp pkey insert
           ;+  i.new
         ==
     ==
@@ -228,77 +230,88 @@
     !!
   ?:  =(%skip n.g.i.jold)
     $(jold t.jold, j +(j))
-  ?:  .=(nkey [n.g.i.jold (getv a.g.i.jold %key)])
+  ?:  =(nkey [n.g.i.jold (old-getv %key a.g.i.jold)])
     ?.  =(0 j)
       =/  n=@ud  0
       =/  nnew=marl  new
-      =/  okey=[n=mane k=tape]  [n.g.i.old (getv a.g.i.old %key)]
-      |-
+      =/  okey=[n=mane k=tape]  [n.g.i.old (old-getv %key a.g.i.old)]
+      |-  ^-  marl
       ?~  nnew
         ^^$(old (snoc t.old i.old))
       ?:  =(%m n.g.i.nnew)
         $(nnew t.nnew, n +(n))
-      =/  nnky=[n=mane k=tape]  [n.g.i.nnew (getv a.g.i.nnew %key)]
-      ?.  .=(okey nnky)
+      =/  nnky=[n=mane k=tape]  [n.g.i.nnew (old-getv %key a.g.i.nnew)]
+      ?.  =(okey nnky)
         $(nnew t.nnew, n +(n))
       ?:  (gte n j)
-        =/  aupd=mart  (upda a.g.i.old a.g.i.nnew)
+        =/  aupd=mart  (old-upda a.g.i.old a.g.i.nnew)
         ?~  aupd
           %=  ^^$
             old  c.i.old
             new  c.i.nnew
+            pkey  k.nnky
             i    0
             acc
               %=  ^^$
                 old  t.old
-                new  %^  newm  new  n
-                  ;m(id <(add n i)>, key k.nnky);
+                new
+                  ^-  marl
+                  %^  newm  new  n
+                  `manx`;m(id <(add n i)>, key k.nnky);
               ==
           ==
         %=  ^^$
           old  c.i.old
           new  c.i.nnew
+          pkey  k.nnky
           i    0
           acc
             %=  ^^$
               old  t.old
-              new  %^  newm  new  n
-                ;m(id <(add n i)>, key k.nnky);
-              acc  :_  acc
+              new
+                ^-  marl
+                %^  newm  new  n
+                `manx`;m(id <(add n i)>, key k.nnky);
+              acc
+                :_  acc
                 [[%c [[%key k.nnky] aupd]] ~]
             ==
         ==
-      =/  aupd=mart  (upda a.g.i.jold a.g.i.new)
+      =/  aupd=mart  (old-upda a.g.i.jold a.g.i.new)
       ?~  aupd
         %=  ^^$
           old  c.i.jold
           new  c.i.new
+          pkey  k.nkey
           i    0
           acc
             %=  ^^$
-              old  (newm old j ;skip;)
+              old  `marl`(newm old j `manx`;skip;)
               new  t.new
               i    +(i)
-              acc  %+  snoc  acc
+              acc
+                %+  snoc  acc
                 ;m(id <i>, key k.nkey);
             ==
         ==
       %=  ^^$
         old  c.i.jold
         new  c.i.new
+        pkey  k.nkey
         i    0
         acc
           %=  ^^$
-            old  (newm old j ;skip;)
+            old  `marl`(newm old j `manx`;skip;)
             new  t.new
             i    +(i)
-            acc  :-  [[%c [[%key k.nkey] aupd]] ~]
+            acc
+              :-  [[%c [[%key k.nkey] aupd]] ~]
               %+  snoc
                 acc
               ;m(id <i>, key k.nkey);
           ==
       ==
-    ?:  =("text" (getv a.g.i.new %mast))
+    ?:  =(%t- n.g.i.new)
       ?:  =(+.-.+.-.-.+.-.old +.-.+.-.-.+.-.new)
         ^$(old t.old, new t.new, i +(i))
       %=  ^$
@@ -307,76 +320,300 @@
         i    +(i)
         acc  [i.new acc]
       ==
-    =/  aupd=mart  (upda a.g.i.old a.g.i.new)
+    =/  aupd=mart  (old-upda a.g.i.old a.g.i.new)
     ?~  aupd
       %=  ^$
         old  c.i.old
         new  c.i.new
+        pkey  k.nkey
         i    0
         acc  ^$(old t.old, new t.new, i +(i))
       ==
     %=  ^$
       old  c.i.old
       new  c.i.new
+      pkey  k.nkey
       i    0
       acc
         %=  ^$
           old  t.old
           new  t.new
           i    +(i)
-          acc  :_  acc
+          acc
+            :_  acc
             [[%c [[%key k.nkey] aupd]] ~]
         ==
     ==
   $(jold t.jold, j +(j))
 ::
+:: :: :: ::
+::
+:: JSON ALGO
+::
+:: :: :: ::
+++  json-algo
+  |=  [old=marl new=marl]
+  =|  i=@ud
+  =|  pkey=@t
+  =|  acc=(list json)
+  |-  ^-  (list json)
+  ?~  new
+    ?~  old
+      acc
+    ?:  =(%skip- n.g.i.old)
+      %=  $
+        old  t.old
+      ==
+    :_  acc      :: node delete case
+    ^-  json
+    :-  %o
+    %-  my
+    :~  ['p' [%s 'd']]
+        ['q' [%a (turn old |=(m=manx [%s (getv %key a.g.m)]))]]
+    ==
+  ?:  &(?=(^ old) =(%skip- n.g.i.old))
+    %=  $
+      old  t.old
+    ==
+  ?:  =(%move- n.g.i.new)
+    %=  $
+      new  t.new
+      i    +(i)
+      acc
+        %+  snoc  acc  :: node ;move-; placeholder resolution case
+        ^-  json
+        :-  %o
+        %-  my
+        :~  ['p' [%s 'm']]
+            ['q' [%s (getv %key a.g.i.new)]]
+            ['r' [%n (getv %i a.g.i.new)]]
+        ==
+    ==
+  =|  j=@ud
+  =/  jold=marl  old
+  =/  nkey=[n=mane k=@t]  [n.g.i.new (getv %key a.g.i.new)]
+  |-  ^-  (list json)
+  ?~  new
+    !!
+  ?~  jold
+    %=  ^$
+      new  t.new
+      i    +(i)
+      acc
+        %+  snoc  acc  :: new node case
+        ^-  json
+        :-  %o
+        %-  my
+        :~  ['p' [%s 'n']]
+            ['q' [%s pkey]]
+            ['r' [%n (scot %ud i)]]
+            ['s' [%s (crip (en-xml:html i.new))]]
+        ==
+    ==
+  ?~  old
+    !!
+  ?:  =(%skip- n.g.i.jold)
+    %=  $
+      jold  t.jold
+      j     +(j)
+    ==
+  ?:  =(nkey [n.g.i.jold (getv %key a.g.i.jold)])
+    ?.  =(0 j)
+      =|  n=@ud
+      =/  nnew=marl  new
+      =/  okey=[n=mane k=@t]  [n.g.i.old (getv %key a.g.i.old)]
+      |-  ^-  (list json)
+      ?~  nnew
+        %=  ^^$
+          old  (snoc t.old i.old)
+        ==
+      ?:  =(%move- n.g.i.nnew)
+        %=  $
+          nnew  t.nnew
+          n     +(n)
+        ==
+      =/  nnky=[n=mane k=@t]  [n.g.i.nnew (getv %key a.g.i.nnew)]
+      ?.  =(okey nnky)
+        %=  $
+          nnew  t.nnew
+          n     +(n)
+        ==
+      ?:  (gte n j)
+        =/  aupd  (upda a.g.i.old a.g.i.nnew)
+        %=  ^^$
+          old   c.i.old
+          new   c.i.nnew
+          pkey  k.nnky
+          i     0
+          acc
+            %=  ^^$
+              old  t.old
+              new
+                %^  newm  new  n
+                ;move-(i (scow %ud (add n i)), key (trip k.nnky));
+              acc
+                ?:  &(?=(~ del.aupd) ?=(~ new.aupd))
+                  acc
+                :_  acc         :: node attribute change case
+                ^-  json
+                :-  %o
+                %-  my
+                :~  ['p' [%s 'c']]
+                    ['q' [%s k.nnky]]
+                    ['r' [%a del.aupd]]
+                    ['s' [%a new.aupd]]
+                ==
+            ==
+        ==
+      =/  aupd  (upda a.g.i.jold a.g.i.new)
+      %=  ^^$
+        old   c.i.jold
+        new   c.i.new
+        pkey  k.nkey
+        i     0
+        acc
+          %=  ^^$
+            old  (newm old j ;skip-;)
+            new  t.new
+            i    +(i)
+            acc
+              =.  acc
+                %+  snoc  acc  :: node move case
+                ^-  json
+                :-  %o
+                %-  my
+                :~  ['p' [%s 'm']]
+                    ['q' [%s k.nkey]]
+                    ['r' [%n (scot %ud i)]]
+                ==
+              ?:  &(?=(~ del.aupd) ?=(~ new.aupd))
+                acc
+              :_  acc
+              ^-  json         :: node attribute change case
+              :-  %o
+              %-  my
+              :~  ['p' [%s 'c']]
+                  ['q' [%s k.nkey]]
+                  ['r' [%a del.aupd]]
+                  ['s' [%a new.aupd]]
+              ==
+          ==
+      ==
+    ?:  =(%t- n.g.i.new)
+      :: ?:  =(+.-.+.-.-.+.-.old +.-.+.-.-.+.-.new)
+      ?:  ?&  ?=(^ c.i.old)  ?=(^ c.i.new)
+              ?=(^ a.g.i.c.i.old)  ?=(^ a.g.i.c.i.new)
+              =(v.i.a.g.i.c.i.old v.i.a.g.i.c.i.new)
+          ==
+        %=  ^$
+          old  t.old
+          new  t.new
+          i    +(i)
+        ==
+      =/  txt=@t
+        ?.  &(?=(^ c.i.new) ?=(^ a.g.i.c.i.new))
+          ''
+        (crip v.i.a.g.i.c.i.new)
+      %=  ^$
+        old  t.old
+        new  t.new
+        i    +(i)
+        acc
+          :_  acc    :: text node change case
+          ^-  json
+          :-  %o
+          %-  my
+          :~  ['p' [%s 't']]
+              ['q' [%s (getv %key a.g.i.new)]]
+              ['r' [%s txt]]
+          ==
+      ==
+    =/  aupd  (upda a.g.i.old a.g.i.new)
+    %=  ^$
+      old   c.i.old
+      new   c.i.new
+      pkey  k.nkey
+      i     0
+      acc
+        %=  ^$
+          old  t.old
+          new  t.new
+          i    +(i)
+          acc
+            ?:  &(?=(~ del.aupd) ?=(~ new.aupd))
+              acc
+            :_  acc           :: node attribute change case
+            ^-  json
+            :-  %o
+            %-  my
+            :~  ['p' [%s 'c']]
+                ['q' [%s k.nkey]]
+                ['r' [%a del.aupd]]
+                ['s' [%a new.aupd]]
+            ==
+        ==
+    ==
+  %=  $
+    jold  t.jold
+    j     +(j)
+  ==
+::
 ++  adky
   |=  root=manx
   |^  ^-  manx
-  (tanx root "0" "~")
+  (tanx root ["" ~])
   ++  tanx
-    |=  [m=manx key=tape pkey=tape]
-    =/  fkey=tape  (getv a.g.m %key)
-    =/  nkey=tape  ?~(fkey key fkey)
+    |=  [m=manx key=(pair tape (list @))]
+    ^-  manx
+    =/  fkey=@t  (getv %key a.g.m)
+    =/  nkey=(pair tape (list @))  ?~(fkey key [((w-co:co 1) `@uw`(mug fkey)) ~])
+    =/  ntap=tape  (weld p.nkey ((w-co:co 1) `@uw`(jam q.nkey)))
     ?:  =(%$ n.g.m)
-      ;span
-        =mast  "text"
-        =key    nkey
-        =pkey   pkey
+      ;t-
+        =key  ntap
         ;+  m
       ==
-    =:  a.g.m  %-  mart  
-          ?~  fkey
-            [[%key nkey] [[%pkey pkey] a.g.m]]
-          [[%pkey pkey] a.g.m]
-        c.m  (tarl c.m nkey)
+    %_    m
+        a.g
+      ^-  mart  
+      ?~  fkey
+        [[%key ntap] a.g.m]
+      a.g.m
+        c
+      (tarl c.m nkey)
     ==
-    m
   ++  tarl
-    |=  [m=marl key=tape]
-    =/  i=@ud  0
+    |=  [m=marl key=(pair tape (list @))]
+    =|  i=@
     |-  ^-  marl
-    ?~  m
-      ~
-    :-  %^  tanx  
-          (manx i.m) 
-        (weld (scow %ud i) (weld "-" key))
-      key
+    ?~  m  ~
+    :-  %+  tanx
+          i.m
+        key(q [i q.key])
     $(m t.m, i +(i))
   --
 ::
-++  getv
-  |=  [m=mart tag=@tas]
+++  old-getv
+  |=  [t=@tas m=mart]
   ^-  tape
   ?~  m
     ~
-  ?:  =(n.i.m tag)
+  ?:  =(n.i.m t)
     v.i.m
   $(m t.m)
 ::
-++  upda
+++  getv
+  |=  [t=@tas m=mart]
+  ^-  @t
+  ?~  m
+    ''
+  ?:  =(n.i.m t)
+    (crip v.i.m)
+  $(m t.m)
+::
+++  old-upda                :: produce a "c" attribute diff
   |=  [om=mart nm=mart]
-  =/  acc=mart  ~
+  =|  acc=mart
   |-  ^-  mart
   ?~  nm
     ?~  om
@@ -384,17 +621,17 @@
     :_  acc
     :-  %rem
     =/  omom=mart  om
-    |-
+    |-  ^-  tape       :: make this better
     ?~  omom
       ~
-    =/  nom=tape  +:<n.i.omom>
-    |-
+    =/  nom=tape  +:<n.i.omom>  :: rem case -> whitespace separated attribute names to delete
+    |-  ^-  tape
     ?~  nom
       [' ' ^$(omom t.omom)]
     [i.nom $(nom t.nom)]
-  =/  i=@ud  0
+  =|  i=@ud
   =/  com=mart  om
-  |-
+  |-  ^-  mart
   ?~  nm
     !!
   ?~  com
@@ -411,9 +648,60 @@
     ==
   $(com t.com, i +(i))
 ::
-++  newm
+++  upda                :: produce a "c" attribute diff
+  |=  [om=mart nm=mart]
+  =|  acc=[del=(list json) new=(list json)]
+  |-  ^+  acc
+  ?~  nm
+    ?~  om
+      acc
+    %_    acc
+        del
+      %+  turn  om
+      |=  [n=mane *]
+      [%s `@t`?>(?=(@ n) n)]
+    ==
+  =|  i=@ud
+  =/  com=mart  om
+  |-  ^+  acc
+  ?~  nm
+    !!
+  ?~  com
+    %=  ^$
+      nm  t.nm
+      new.acc
+        :_  new.acc
+        :-  %a
+        :~  [%s `@t`?>(?=(@ n.i.nm) n.i.nm)]
+            [%s (crip v.i.nm)]
+        ==
+    ==
+  ?~  om
+    !!
+  ?:  =(n.i.com n.i.nm)
+    ?:  =(v.i.com v.i.nm)
+      %=  ^$
+        om  (oust [i 1] (mart om))
+        nm  t.nm
+      ==
+    %=  ^$
+      om   (oust [i 1] (mart om))
+      nm   t.nm
+      new.acc
+        :_  new.acc
+        :-  %a
+        :~  [%s `@t`?>(?=(@ n.i.nm) n.i.nm)]
+            [%s (crip v.i.nm)]
+        ==
+    ==
+  %=  $
+    com  t.com
+    i    +(i)
+  ==
+::
+++  newm                       :: is this identical to snap???
   |=  [ml=marl i=@ud mx=manx]
-  =/  j=@ud  0
+  =|  j=@ud
   |-  ^-  marl
   ?~  ml
     ~
@@ -584,6 +872,7 @@
           if (navUrl && (navUrl !== window.location.pathname)) {
               history.pushState({}, '', navUrl);
           };
+          console.log(htmlData);
           while (container.content.firstElementChild.children.length > 0) {
               let gustChild = container.content.firstElementChild.firstElementChild;
               if (gustChild.tagName === 'D') {
@@ -594,7 +883,7 @@
                   gustChild.remove();
               } else if (gustChild.tagName === 'N') {
                   const nodeKey = gustChild.firstElementChild.getAttribute('key');
-                  const parentKey = gustChild.firstElementChild.getAttribute('pkey');
+                  const parentKey = gustChild.getAttribute('pkey');
                   const appendIndex = gustChild.id;
                   let domParent = document.querySelector(`[key="${parentKey}"]`);
                   domParent.insertBefore(gustChild.firstElementChild, domParent.children[appendIndex]);
@@ -644,6 +933,7 @@
                   };
                   gustChild.remove();
               } else {
+                  console.log('bruh moment case');
                   const nodeKey = gustChild.getAttribute('key');
                   let existentNode = document.querySelector(`[key="${nodeKey}"]`);
                   existentNode.replaceWith(gustChild);
