@@ -1,30 +1,25 @@
 /-  *chess-ui
 /+  chess, default-agent, mast
-/=  index  /app/chess-ui/index
+/=  render  /app/chess-ui/index
 |%
-+$  view  $~([[%html ~] [[%head ~] ~] [[%body ~] ~] ~] manx)
-+$  url  path
++$  ui  manx
 +$  ui-state
-  $:  =view  =url
-      =games  =challenges-sent  =challenges-received
-      =menu-mode  =notification  =expand-game-options  =expand-challenge-form
+  $:  =games  =challenges-sent  =challenges-received  =menu-mode
+      =notification  =expand-game-options  =expand-challenge-form
       =selected-game-id  =selected-game-pieces
       =selected-piece  =available-moves
   ==
 +$  card  card:agent:gall
 --
 ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
+=+  (pin:mast ui-state)
+%-  agent:mast
 =|  [=source ui-state]
 =*  state  -
 ^-  agent:gall
 |_  =bowl:gall
 +*  this  .
     def   ~(. (default-agent this %.n) bowl)
-    ::  ::  ::
-    routes  
-      %-  limo
-      :~  [/chess index]
-      ==
     sail-sample
       :*  source  bowl  games  challenges-sent  challenges-received
           menu-mode  notification  expand-game-options  expand-challenge-form
@@ -39,7 +34,7 @@
       (sein:title our.bowl now.bowl our.bowl)
     our.bowl
   :_  this(+.state *ui-state)
-  :~  [%pass /bind %arvo %e %connect `/chess %chess-ui]
+  :~  (bind-url:mast dap.bowl /chess)
       [%pass /challenges %agent [source %chess] %watch /challenges]
       [%pass /active-games %agent [source %chess] %watch /active-games]
       [%pass /get-state %agent [source %chess] %poke %chess-ui-agent !>([%get-state ~])]
@@ -54,7 +49,7 @@
       (sein:title our.bowl now.bowl our.bowl)
     our.bowl
   :_  this(+.state *ui-state)
-  :~  [%pass /bind %arvo %e %connect `/chess %chess-ui]
+  :~  (bind-url:mast dap.bowl /chess)
       [%pass /challenges %agent [source %chess] %watch /challenges]
       [%pass /active-games %agent [source %chess] %watch /active-games]
       [%pass /get-state %agent [source %chess] %poke %chess-ui-agent !>([%get-state ~])]
@@ -68,8 +63,6 @@
     %chess-ui-agent
       =/  act  !<(chess-ui-agent vase)
       ?+  -.act  (on-poke:def mark vase)
-        ::
-        ::  receive state data from the main agent (instead of using remote scry)
         %give-state
           =:  games                games.act
               challenges-sent      challenges-sent.act
@@ -82,49 +75,47 @@
       =+  !<([eyre-id=@ta req=inbound-request:eyre] vase)
       ?.  authenticated.req
         [(make-auth-redirect:mast eyre-id) this]
-      ?+    method.request.req  [(make-400:mast eyre-id) this]
-        %'GET'
-          =/  req-url=path  (parse-url:mast url.request.req)
-          =/  new-view=manx  (rig:mast routes req-url sail-sample)
-          :_  this(view new-view, url req-url)
-          (plank:mast "chess-ui" /display-updates our.bowl eyre-id new-view)
+      ?+  method.request.req  [(make-400:mast eyre-id) this]
+        ::
+          %'GET'
+        =^  cards  rig.mast
+          (gale:mast our.bowl dap.bowl eyre-id src.bowl (render sail-sample))
+        [cards this]
+        ::
       ==
     ::
-    %json
+    %mast-event
       ?>  =(our.bowl src.bowl)
-      =/  client-poke  (parse-json:mast !<(json vase))
-      ?.  &(?=(^ tags.client-poke) ?=(^ t.tags.client-poke))
-        ~&('tags are missing from client poke' (on-poke:def [mark vase]))
-      ?+  [i.tags.client-poke i.t.tags.client-poke]
-          ~&('client event not handled' (on-poke:def [mark vase]))
+      =+  !<(eve=event:mast vase)
+      ?+  path.eve  ~|(%no-event-handler (on-poke:def [mark vase]))
         ::
-        [%click %set-menu-mode]
+        [%click %set-menu-mode *]
           =/  menu-val=@ta  
-            ?~  t.t.tags.client-poke  ~&('set-menu-mode path missing' !!)
-            i.t.t.tags.client-poke
+            ?~  t.t.path.eve  ~&('set-menu-mode path missing' !!)
+            i.t.t.path.eve
           =:  menu-mode  (^menu-mode menu-val)
               expand-challenge-form  |
             ==
-          =/  new-view=manx  (rig:mast routes url sail-sample)
-          :_  this(view new-view)
-          [(gust:mast /display-updates view new-view) ~]
+          =^  cards  rig.mast
+            (gust:mast src.bowl (render sail-sample))
+          [cards this]
         ::
-        [%click %toggle-challenge-form]
+        [%click %toggle-challenge-form *]
           =.  expand-challenge-form  !expand-challenge-form
-          =/  new-view=manx  (rig:mast routes url sail-sample)
-          :_  this(view new-view)
-          [(gust:mast /display-updates view new-view) ~]
+          =^  cards  rig.mast
+            (gust:mast src.bowl (render sail-sample))
+          [cards this]
         ::
-        [%click %toggle-game-options]
+        [%click %toggle-game-options *]
           =.  expand-game-options  !expand-game-options
-          =/  new-view=manx  (rig:mast routes url sail-sample)
-          :_  this(view new-view)
-          [(gust:mast /display-updates view new-view) ~]
+          =^  cards  rig.mast
+            (gust:mast src.bowl (render sail-sample))
+          [cards this]
         ::
-        [%click %select-game]
+        [%click %select-game *]
           =/  atom-id-input=@ta
-            ?~  t.t.tags.client-poke  ~&('select-game path missing' !!)
-            i.t.t.tags.client-poke
+            ?~  t.t.path.eve  ~&('select-game path missing' !!)
+            i.t.t.path.eve
           =/  id-val=game-id  (game-id (slav %ud atom-id-input))
           ?:  =(id-val selected-game-id)
             [~ this]
@@ -139,19 +130,19 @@
               available-moves      ~
               expand-game-options  |
             ==
-          =/  new-view=manx  (rig:mast routes url sail-sample)
-          :_  this(view new-view)
-          [(gust:mast /display-updates view new-view) ~]
+          =^  cards  rig.mast
+            (gust:mast src.bowl (render sail-sample))
+          [cards this]
         ::
-        [%click %select-piece]
+        [%click %select-piece *]
           ?~  selected-game-id  ~&('no selected game when selecting piece' !!)
-          ?.  ?&  ?=(^ t.t.tags.client-poke)  ?=(^ t.t.t.tags.client-poke)
-                  ?=(^ t.t.t.t.tags.client-poke)  ?=(^ t.t.t.t.t.tags.client-poke)
+          ?.  ?&  ?=(^ t.t.path.eve)  ?=(^ t.t.t.path.eve)
+                  ?=(^ t.t.t.t.path.eve)  ?=(^ t.t.t.t.t.path.eve)
               ==
             ~&('select-piece path missing' (on-poke:def [mark vase]))
           =/  selection
-            :-  (chess-square [i.t.t.tags.client-poke (slav %ud i.t.t.t.tags.client-poke)])
-            (chess-piece [i.t.t.t.t.tags.client-poke i.t.t.t.t.t.tags.client-poke])
+            :-  (chess-square [i.t.t.path.eve (slav %ud i.t.t.t.path.eve)])
+            (chess-piece [i.t.t.t.t.path.eve i.t.t.t.t.t.path.eve])
           =:  selected-piece  ?:(=(selected-piece selection) ~ selection)
               notification  ~
               available-moves
@@ -161,38 +152,39 @@
                     board.position:(~(got by games) selected-game-id)
                 selection
             ==
-          =/  new-view=manx  (rig:mast routes url sail-sample)
-          :_  this(view new-view)
-          [(gust:mast /display-updates view new-view) ~]
+          =^  cards  rig.mast
+            (gust:mast src.bowl (render sail-sample))
+          [cards this]
         ::
-        [%click %move-piece]
+        [%click %move-piece *]
           ?~  selected-game-id  
             ~&('no selected game for move-piece' (on-poke:def [mark vase]))
           ?~  selected-piece  
             ~&('no selected piece for move-piece' (on-poke:def [mark vase]))
-          ?.  &(?=(^ t.t.tags.client-poke) ?=(^ t.t.t.tags.client-poke))
+          ?.  &(?=(^ t.t.path.eve) ?=(^ t.t.t.path.eve))
             ~&('move-piece path missing' (on-poke:def [mark vase]))
-          =/  to  (chess-square [i.t.t.tags.client-poke (slav %ud i.t.t.t.tags.client-poke)])
+          =/  to  (chess-square [i.t.t.path.eve (slav %ud i.t.t.t.path.eve)])
           =.  available-moves  ~
-          =/  new-view=manx  (rig:mast routes url sail-sample)
-          :_  this(view new-view)
-          :~  (gust:mast /display-updates view new-view)
-              :*  %pass   /move-piece
-                  %agent  [source %chess]
-                  %poke   %chess-user-action
-                  !>([%make-move selected-game-id %move chess-square.selected-piece to ~])
-          ==  ==
+          =^  cards  rig.mast
+            (gust:mast src.bowl (render sail-sample))
+          :_  this
+          :_  cards
+          :*  %pass   /move-piece
+              %agent  [source %chess]
+              %poke   %chess-user-action
+              !>([%make-move selected-game-id %move chess-square.selected-piece to ~])
+          ==
         ::
-        [%click %send-challenge]
+        [%click %send-challenge *]
           =/  ship-input=@p
-            (slav %p (~(got by data.client-poke) '/challenge-ship-input/value'))
+            (slav %p (~(got by data.eve) '/challenge-ship-input/value'))
           =/  note-input=@t
-            (~(got by data.client-poke) '/challenge-note-input/value')
+            (~(got by data.eve) '/challenge-note-input/value')
           =/  side-input
             %-  ?(%white %black %random)
-            (~(got by data.client-poke) '/challenge-side-input/value')
+            (~(got by data.eve) '/challenge-side-input/value')
           =/  practice-input=?
-            =('true' (~(got by data.client-poke) '/challenge-practice-input/checked'))
+            =('true' (~(got by data.eve) '/challenge-practice-input/checked'))
           :_  this
           :_  ~
           :*  %pass   /send-challenge
@@ -201,11 +193,11 @@
               !>([%send-challenge ship-input side-input note-input practice-input])
           ==
         ::
-        [%click %accept-challenge]
+        [%click %accept-challenge *]
           =/  challenger=@p
             %+  slav  %p
-            ?~  t.t.tags.client-poke  ~&('accept-challenge path missing' !!)
-            i.t.t.tags.client-poke
+            ?~  t.t.path.eve  ~&('accept-challenge path missing' !!)
+            i.t.t.path.eve
           :_  this
           :_  ~
           :*  %pass   /accept-challenge
@@ -214,11 +206,11 @@
               !>([%accept-challenge challenger])
           ==
         ::
-        [%click %decline-challenge]
+        [%click %decline-challenge *]
           =/  challenger=@p
             %+  slav  %p
-            ?~  t.t.tags.client-poke  ~&('decline-challenge path missing' !!)
-            i.t.t.tags.client-poke
+            ?~  t.t.path.eve  ~&('decline-challenge path missing' !!)
+            i.t.t.path.eve
           :_  this
           :_  ~
           :*  %pass   /decline-challenge
@@ -227,7 +219,7 @@
               !>([%decline-challenge challenger])
           ==
         ::
-        [%click %resign]
+        [%click %resign *]
           ?~  selected-game-id
             ~&('selected-game-id missing from resign' !!)
           :_  %=  this
@@ -243,43 +235,6 @@
               !>([%resign selected-game-id])
           ==
         ::
-        ::  [%click %offer-draw]
-        ::    ?~  selected-game-id
-        ::      ~&('selected-game-id missing from offer-draw' !!)
-        ::    :_  this
-        ::    :_  ~
-        ::    :*  %pass   /offer-draw
-        ::        %agent  [source %chess]
-        ::        %poke   %chess-user-action
-        ::        !>([%offer-draw selected-game-id])
-        ::    ==
-        ::  ::
-        ::  [%click %accept-draw]
-        ::    ?~  selected-game-id
-        ::      ~&('selected-game-id missing from accept-draw' !!)
-        ::    :_  this
-        ::    :_  ~
-        ::    :*  %pass   /accept-draw
-        ::        %agent  [source %chess]
-        ::        %poke   %chess-user-action
-        ::        !>([%accept-draw selected-game-id])
-        ::    ==
-        ::  ::
-        ::  [%click %decline-draw]
-        ::    ?~  selected-game-id
-        ::      ~&('selected-game-id missing from decline-draw' !!)
-        ::    =/  current-game  (~(got by games) selected-game-id)
-        ::    =.  got-draw-offer.current-game  |
-        ::    =.  games  (~(put by games) selected-game-id current-game)
-        ::    =/  new-view=manx  (rig:mast routes url sail-sample)
-        ::    :_  this(view new-view)
-        ::    :~  (gust:mast /display-updates view new-view)
-        ::        :*  %pass   /decline-draw
-        ::            %agent  [source %chess]
-        ::            %poke   %chess-user-action
-        ::            !>([%decline-draw selected-game-id])
-        ::    ==  ==
-        ::
       ==
   ==
 ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
@@ -287,12 +242,7 @@
   |=  =path
   ^-  (quip card _this)
   ?>  =(our.bowl src.bowl)
-  ?+  path  (on-watch:def path)
-    [%http-response *]
-      [~ this]
-    [%display-updates *]
-      [~ this]
-  ==
+  [~ this]
 ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
 ++  on-leave  on-leave:def
 ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
@@ -325,9 +275,6 @@
 ++  on-agent
   |=  [=wire =sign:agent:gall]
   ^-  (quip card _this)
-  ::  ~&  >>  'on-agent'
-  ::  ~&  >>  wire
-  ::  ~&  >  sign
   ?+  wire  (on-agent:def wire sign)
     ::
     [%move-piece ~]
@@ -340,9 +287,9 @@
           =:  notification  "Invalid move"
               selected-piece  ~
             ==
-          =/  new-view=manx  (rig:mast routes url sail-sample)
-          :_  this(view new-view)
-          [(gust:mast /display-updates view new-view) ~]
+          =^  cards  rig.mast
+            (gust:mast src.bowl (render sail-sample))
+          [cards this]
       ==
     ::
     [%challenges ~]
@@ -364,30 +311,30 @@
                       challenges-sent
                         (~(put by challenges-sent) who.update challenge.update)
                     ==
-                  =/  new-view=manx  (rig:mast routes url sail-sample)
-                  :_  this(view new-view)
-                  [(gust:mast /display-updates view new-view) ~]
+                  =^  cards  rig.mast
+                    (gust:mast src.bowl (render sail-sample))
+                  [cards this]
                 ::
                 %challenge-received
                   =.  challenges-received
                     (~(put by challenges-received) who.update challenge.update)
-                  =/  new-view=manx  (rig:mast routes url sail-sample)
-                  :_  this(view new-view)
-                  [(gust:mast /display-updates view new-view) ~]
+                  =^  cards  rig.mast
+                    (gust:mast src.bowl (render sail-sample))
+                  [cards this]
                 ::
                 %challenge-resolved
                   =.  challenges-sent
                     (~(del by challenges-sent) who.update)
-                  =/  new-view=manx  (rig:mast routes url sail-sample)
-                  :_  this(view new-view)
-                  [(gust:mast /display-updates view new-view) ~]
+                  =^  cards  rig.mast
+                    (gust:mast src.bowl (render sail-sample))
+                  [cards this]
                 ::
                 %challenge-replied
                   =.  challenges-received
                     (~(del by challenges-received) who.update)
-                  =/  new-view=manx  (rig:mast routes url sail-sample)
-                  :_  this(view new-view)
-                  [(gust:mast /display-updates view new-view) ~]
+                  =^  cards  rig.mast
+                    (gust:mast src.bowl (render sail-sample))
+                  [cards this]
               ==
           ==
       ==
@@ -421,13 +368,14 @@
                     practice-game=%.n
                 ==
               =.  games  (~(put by games) game-id.chess-game-data new-game)
-              =/  new-view=manx  (rig:mast routes url sail-sample)
-              :_  this(view new-view)
-              :~  (gust:mast /display-updates view new-view)
-                  :*  %pass   /game-updates 
-                      %agent  [source %chess] 
-                      %watch  /game/(scot %da game-id.chess-game-data)/updates
-              ==  ==
+              =^  cards  rig.mast
+                (gust:mast src.bowl (render sail-sample))
+              :_  this
+              :_  cards
+              :*  %pass   /game-updates 
+                  %agent  [source %chess] 
+                  %watch  /game/(scot %da game-id.chess-game-data)/updates
+              ==
           ==
       ==
     ::
@@ -437,8 +385,6 @@
           ?+  p.cage.sign  (on-agent:def wire sign)
             %chess-update
               =/  update  !<(chess-update q.cage.sign)
-              ::  ~&  >  'GAME UPDATE'
-              ::  ~&  >>  update
               ?+  -.update  (on-agent:def wire sign)
                 ::
                 %position
@@ -487,18 +433,9 @@
                           i.selected-game-pieces
                         [key.i.selected-game-pieces to chess-piece.i.selected-game-pieces]
                     $(selected-game-pieces t.selected-game-pieces)
-                  =/  new-view=manx  (rig:mast routes url sail-sample)
-                  :_  this(view new-view)
-                  [(gust:mast /display-updates view new-view) ~]
-                ::
-                ::  %draw-offered
-                ::    =/  game-to-update  (~(get by games) game-id.update)
-                ::    ?~  game-to-update  ~&('game not found for chess-update draw-offered' !!)
-                ::    =.  games
-                ::      (~(put by games) game-id.update u.game-to-update(got-draw-offer &))
-                ::    =/  new-view=manx  (rig:mast routes url sail-sample)
-                ::    :_  this(view new-view)
-                ::    [(gust:mast /display-updates view new-view) ~]
+                  =^  cards  rig.mast
+                    (gust:mast src.bowl (render sail-sample))
+                  [cards this]
                 ::
                 %result
                   =:  games  (~(del by games) game-id.update)
@@ -507,9 +444,9 @@
                       selected-piece  ~
                       available-moves  ~
                     ==
-                  =/  new-view=manx  (rig:mast routes url sail-sample)
-                  :_  this(view new-view)
-                  [(gust:mast /display-updates view new-view) ~]
+                  =^  cards  rig.mast
+                    (gust:mast src.bowl (render sail-sample))
+                  [cards this]
                 ::
               ==
           ==
@@ -517,16 +454,6 @@
     ::
   ==
 ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
-++  on-arvo
-  |=  [=wire =sign-arvo]
-  ^-  (quip card _this)
-  ?.  ?=([%bind ~] wire)
-    (on-arvo:def [wire sign-arvo])
-  ?.  ?=([%eyre %bound *] sign-arvo)
-    (on-arvo:def [wire sign-arvo])
-  ~?  !accepted.sign-arvo
-    %eyre-rejected-squad-binding
-  `this
-::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::  ::
+++  on-arvo   on-arvo:def
 ++  on-fail   on-fail:def
 --
