@@ -79,7 +79,7 @@
         ::
           %'GET'
         =^  cards  rig.mast
-          (gale:mast our.bowl dap.bowl eyre-id src.bowl (render sail-sample))
+          (gale:mast bowl eyre-id (render sail-sample))
         [cards this]
         ::
       ==
@@ -97,19 +97,19 @@
               expand-challenge-form  |
             ==
           =^  cards  rig.mast
-            (gust:mast src.bowl (render sail-sample))
+            (gust:mast bowl (render sail-sample))
           [cards this]
         ::
         [%click %toggle-challenge-form *]
           =.  expand-challenge-form  !expand-challenge-form
           =^  cards  rig.mast
-            (gust:mast src.bowl (render sail-sample))
+            (gust:mast bowl (render sail-sample))
           [cards this]
         ::
         [%click %toggle-game-options *]
           =.  expand-game-options  !expand-game-options
           =^  cards  rig.mast
-            (gust:mast src.bowl (render sail-sample))
+            (gust:mast bowl (render sail-sample))
           [cards this]
         ::
         [%click %select-game *]
@@ -131,7 +131,7 @@
               expand-game-options  |
             ==
           =^  cards  rig.mast
-            (gust:mast src.bowl (render sail-sample))
+            (gust:mast bowl (render sail-sample))
           [cards this]
         ::
         [%click %select-piece *]
@@ -153,7 +153,7 @@
                 selection
             ==
           =^  cards  rig.mast
-            (gust:mast src.bowl (render sail-sample))
+            (gust:mast bowl (render sail-sample))
           [cards this]
         ::
         [%click %move-piece *]
@@ -166,7 +166,7 @@
           =/  to  (chess-square [i.t.t.path.eve (slav %ud i.t.t.t.path.eve)])
           =.  available-moves  ~
           =^  cards  rig.mast
-            (gust:mast src.bowl (render sail-sample))
+            (gust:mast bowl (render sail-sample))
           :_  this
           :_  cards
           :*  %pass   /move-piece
@@ -288,7 +288,7 @@
               selected-piece  ~
             ==
           =^  cards  rig.mast
-            (gust:mast src.bowl (render sail-sample))
+            (gust:mast bowl (render sail-sample))
           [cards this]
       ==
     ::
@@ -312,28 +312,28 @@
                         (~(put by challenges-sent) who.update challenge.update)
                     ==
                   =^  cards  rig.mast
-                    (gust:mast src.bowl (render sail-sample))
+                    (gust:mast bowl (render sail-sample))
                   [cards this]
                 ::
                 %challenge-received
                   =.  challenges-received
                     (~(put by challenges-received) who.update challenge.update)
                   =^  cards  rig.mast
-                    (gust:mast src.bowl (render sail-sample))
+                    (gust:mast bowl (render sail-sample))
                   [cards this]
                 ::
                 %challenge-resolved
                   =.  challenges-sent
                     (~(del by challenges-sent) who.update)
                   =^  cards  rig.mast
-                    (gust:mast src.bowl (render sail-sample))
+                    (gust:mast bowl (render sail-sample))
                   [cards this]
                 ::
                 %challenge-replied
                   =.  challenges-received
                     (~(del by challenges-received) who.update)
                   =^  cards  rig.mast
-                    (gust:mast src.bowl (render sail-sample))
+                    (gust:mast bowl (render sail-sample))
                   [cards this]
               ==
           ==
@@ -369,7 +369,7 @@
                 ==
               =.  games  (~(put by games) game-id.chess-game-data new-game)
               =^  cards  rig.mast
-                (gust:mast src.bowl (render sail-sample))
+                (gust:mast bowl (render sail-sample))
               :_  this
               :_  cards
               :*  %pass   /game-updates 
@@ -434,7 +434,7 @@
                         [key.i.selected-game-pieces to chess-piece.i.selected-game-pieces]
                     $(selected-game-pieces t.selected-game-pieces)
                   =^  cards  rig.mast
-                    (gust:mast src.bowl (render sail-sample))
+                    (gust:mast bowl (render sail-sample))
                   [cards this]
                 ::
                 %result
@@ -445,7 +445,7 @@
                       available-moves  ~
                     ==
                   =^  cards  rig.mast
-                    (gust:mast src.bowl (render sail-sample))
+                    (gust:mast bowl (render sail-sample))
                   [cards this]
                 ::
               ==
